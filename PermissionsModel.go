@@ -1,4 +1,4 @@
-package auth
+package uauth
 
 // Permission type
 type Permission string

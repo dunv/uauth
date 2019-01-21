@@ -1,4 +1,4 @@
-package auth
+package uauth
 
 import (
 	"github.com/dunv/mongo"

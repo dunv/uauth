@@ -1,4 +1,4 @@
-package auth
+package uauth
 
 import "gopkg.in/mgo.v2/bson"
 
