@@ -7,8 +7,8 @@ import (
 
 	"gopkg.in/mgo.v2/bson"
 
-	"github.com/dunv/umongo"
 	"github.com/dunv/uhttp"
+	"github.com/dunv/umongo"
 )
 
 var getUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +24,7 @@ var getUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reques
 	params := r.Context().Value(uhttp.CtxKeyParams).(map[string]interface{})
 
 	// Get DB
-	db := r.Context().Value(uhttp.CtxKeyDB).(*mongo.DbSession)
+	db := r.Context().Value(uhttp.CtxKeyDB).(*umongo.DbSession)
 	service := NewUserService(db)
 	userFromDb, err := service.Get(bson.ObjectIdHex(params["userId"].(string)))
 

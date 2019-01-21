@@ -7,8 +7,8 @@ import (
 
 	"gopkg.in/mgo.v2/bson"
 
-	"github.com/dunv/umongo"
 	"github.com/dunv/uhttp"
+	"github.com/dunv/umongo"
 )
 
 var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +25,7 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	}
 
 	// Get DB
-	db := r.Context().Value(uhttp.CtxKeyDB).(*mongo.DbSession)
+	db := r.Context().Value(uhttp.CtxKeyDB).(*umongo.DbSession)
 	service := NewUserService(db)
 	// Load user to check if it exists!
 	userFromDb, err := service.Get(bson.ObjectIdHex(userFromRequest.ID))

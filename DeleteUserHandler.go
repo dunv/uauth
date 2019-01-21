@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dunv/umongo"
 	"github.com/dunv/uhttp"
+	"github.com/dunv/umongo"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -22,7 +22,7 @@ var deleteUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	params := r.Context().Value(uhttp.CtxKeyParams).(map[string]interface{})
 
 	// Get DB
-	db := r.Context().Value(uhttp.CtxKeyDB).(*mongo.DbSession)
+	db := r.Context().Value(uhttp.CtxKeyDB).(*umongo.DbSession)
 	service := NewUserService(db)
 
 	err := service.Delete(bson.ObjectIdHex(params["userId"].(string)))

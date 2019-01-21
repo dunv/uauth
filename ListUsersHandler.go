@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dunv/umongo"
 	"github.com/dunv/uhttp"
+	"github.com/dunv/umongo"
 )
 
 var listUsersHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +19,7 @@ var listUsersHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Requ
 	}
 
 	// Get DB
-	db := r.Context().Value(uhttp.CtxKeyDB).(*mongo.DbSession)
+	db := r.Context().Value(uhttp.CtxKeyDB).(*umongo.DbSession)
 	userService := NewUserService(db)
 	usersFromDb, err := userService.List()
 

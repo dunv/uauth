@@ -31,7 +31,7 @@ func (s *UserService) CreateUser(user *User) error {
 }
 
 // NewUserService for creating a UserService
-func NewUserService(db *mongo.DbSession) *UserService {
+func NewUserService(db *umongo.DbSession) *UserService {
 	collection := db.GetCollection(UsersCollection)
 	collection.EnsureIndex(userModelIndex())
 	return &UserService{collection}

@@ -25,7 +25,7 @@ type RoleService struct {
 }
 
 // NewRoleService for creating a RoleService
-func NewRoleService(db *mongo.DbSession) *RoleService {
+func NewRoleService(db *umongo.DbSession) *RoleService {
 	collection := db.GetCollection(RolesCollection)
 	collection.EnsureIndex(roleModelIndex())
 	return &RoleService{collection}

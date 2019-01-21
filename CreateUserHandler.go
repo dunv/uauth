@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dunv/umongo"
 	"github.com/dunv/uhttp"
+	"github.com/dunv/umongo"
 )
 
 type createUserModel struct {
@@ -36,7 +36,7 @@ var createUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	}
 
 	// Get DB
-	db := r.Context().Value(uhttp.CtxKeyDB).(*mongo.DbSession)
+	db := r.Context().Value(uhttp.CtxKeyDB).(*umongo.DbSession)
 
 	// Verify all roles exist
 	roleService := NewRoleService(db)

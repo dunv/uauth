@@ -13,7 +13,7 @@ const (
 )
 
 // CreateInitialRolesIfNotExist roles if non-existant
-func CreateInitialRolesIfNotExist(s *mongo.DbSession) {
+func CreateInitialRolesIfNotExist(s *umongo.DbSession) {
 	roleService := NewRoleService(s)
 	allRoles, err := roleService.GetAllRoles()
 	if err != nil {
@@ -41,7 +41,7 @@ func CreateInitialRolesIfNotExist(s *mongo.DbSession) {
 }
 
 // CreateInitialUsersIfNotExist creates users if non-existant
-func CreateInitialUsersIfNotExist(s *mongo.DbSession) {
+func CreateInitialUsersIfNotExist(s *umongo.DbSession) {
 	userService := NewUserService(s)
 
 	allUsers, err := userService.List()

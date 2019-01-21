@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/dunv/umongo"
 	"github.com/dunv/uhttp"
+	"github.com/dunv/umongo"
 )
 
 type rolesGetResponse struct {
@@ -19,7 +19,7 @@ var RolesGetHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reque
 	user := r.Context().Value(CtxKeyUser).(User)
 
 	// Get Roles
-	db := r.Context().Value(uhttp.CtxKeyDB).(*mongo.DbSession)
+	db := r.Context().Value(uhttp.CtxKeyDB).(*umongo.DbSession)
 	rolesService := NewRoleService(db)
 	roles, err := rolesService.GetMultipleByName(*user.Roles)
 
