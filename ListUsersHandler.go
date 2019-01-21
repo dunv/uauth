@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dunv/mongo"
+	"github.com/dunv/umongo"
 	"github.com/dunv/uhttp"
 )
 

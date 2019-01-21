@@ -7,7 +7,7 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/dunv/mongo"
+	"github.com/dunv/umongo"
 	"github.com/dunv/uhttp"
 )
 

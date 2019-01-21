@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"log"
 
-	"github.com/dunv/mongo"
+	"github.com/dunv/umongo"
 )
 
 const (
