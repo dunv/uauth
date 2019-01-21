@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/dunv/mongo"
 	"github.com/dunv/uhttp"
 	"gopkg.in/mgo.v2/bson"
-	"unverricht.net/mongo"
 )
 
 var deleteUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

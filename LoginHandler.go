@@ -7,8 +7,8 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/dunv/mongo"
 	"github.com/dunv/uhttp"
-	"unverricht.net/mongo"
 )
 
 type loginRequest struct {

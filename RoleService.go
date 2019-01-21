@@ -1,9 +1,9 @@
 package auth
 
 import (
-	"gopkg.in/mgo.v2"
+	"github.com/dunv/mongo"
+	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"unverricht.net/mongo"
 )
 
 // RolesCollection is the name of the collection in mongo

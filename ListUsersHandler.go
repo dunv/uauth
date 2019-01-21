@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/dunv/mongo"
 	"github.com/dunv/uhttp"
-	"unverricht.net/mongo"
 )
 
 var listUsersHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

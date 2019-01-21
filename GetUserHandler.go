@@ -7,8 +7,8 @@ import (
 
 	"gopkg.in/mgo.v2/bson"
 
+	"github.com/dunv/mongo"
 	"github.com/dunv/uhttp"
-	"unverricht.net/mongo"
 )
 
 var getUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
