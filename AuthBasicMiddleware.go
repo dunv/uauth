@@ -2,19 +2,21 @@ package uauth
 
 import (
 	"context"
-	"crypto/subtle"
+	"crypto/md5"
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
 // AuthBasic <-
-func AuthBasic(username string, password string) func(next http.HandlerFunc) http.HandlerFunc {
+func AuthBasic(wantedUsername string, wantedMd5Password string) func(next http.HandlerFunc) http.HandlerFunc {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 
 			user, pass, ok := r.BasicAuth()
+			passMd5 := fmt.Sprintf("%x", md5.Sum([]byte(pass)))
 
-			if !ok || subtle.ConstantTimeCompare([]byte(user), []byte(username)) != 1 || subtle.ConstantTimeCompare([]byte(pass), []byte(password)) != 1 {
+			if !ok || user != wantedUsername || passMd5 != wantedMd5Password {
 				js, _ := json.Marshal(map[string]string{
 					"error": "unauthorized",
 				})
