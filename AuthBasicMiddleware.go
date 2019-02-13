@@ -8,7 +8,7 @@ import (
 )
 
 // AuthBasic <-
-func AuthBasic(username string, password string, realm string) func(next http.HandlerFunc) http.HandlerFunc {
+func AuthBasic(username string, password string) func(next http.HandlerFunc) http.HandlerFunc {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 
@@ -19,7 +19,6 @@ func AuthBasic(username string, password string, realm string) func(next http.Ha
 					"error": "unauthorized",
 				})
 				w.Header().Add("Content-Type", "application/json")
-				w.Header().Add("WWW-Authenticate", `Basic realm="`+realm+`"`)
 				w.WriteHeader(401)
 				w.Write(js)
 				return
