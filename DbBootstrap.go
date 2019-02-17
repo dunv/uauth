@@ -3,6 +3,7 @@ package uauth
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"fmt"
 	"log"
 
 	"github.com/dunv/umongo"
@@ -68,6 +69,42 @@ func CreateInitialUsersIfNotExist(s *umongo.DbSession) {
 		}
 		log.Println("Done.")
 	}
+}
+
+// CreateCustomRolesIfNotExist <-
+func CreateCustomRolesIfNotExist(s *umongo.DbSession, wantedRoles []Role, identifier string) error {
+	roleService := NewRoleService(s)
+	allRoles, err := roleService.GetAllRoles()
+	if err != nil {
+		log.Println("Error loading roles")
+		return fmt.Errorf("Error loading roles")
+	}
+
+	missingRoles := []Role{}
+	found := false
+	for _, wantedRole := range wantedRoles {
+		found = false
+		for _, existingRole := range *allRoles {
+			if wantedRole.Name == existingRole.Name {
+				found = true
+				break
+			}
+		}
+		if !found {
+			missingRoles = append(missingRoles, wantedRole)
+		}
+	}
+
+	if len(missingRoles) != 0 {
+		log.Printf("Creating initial roles (%s)... \n", identifier)
+		for _, role := range missingRoles {
+			log.Printf("role: %s", role.Name)
+			roleService.CreateRole(&role)
+		}
+		log.Println("Done.")
+	}
+
+	return nil
 }
 
 func randStr(len int) string {
