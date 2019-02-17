@@ -18,7 +18,7 @@ func CreateInitialRolesIfNotExist(s *umongo.DbSession) {
 	roleService := NewRoleService(s)
 	allRoles, err := roleService.GetAllRoles()
 	if err != nil {
-		log.Println("Error loading roles")
+		log.Printf("Error loading roles (%s) \n", err)
 		return
 	}
 
@@ -47,7 +47,7 @@ func CreateInitialUsersIfNotExist(s *umongo.DbSession) {
 
 	allUsers, err := userService.List()
 	if err != nil {
-		log.Println("Error loading users")
+		log.Printf("Error loading users (%s)", err)
 		return
 	}
 
@@ -76,7 +76,7 @@ func CreateCustomRolesIfNotExist(s *umongo.DbSession, wantedRoles []Role, identi
 	roleService := NewRoleService(s)
 	allRoles, err := roleService.GetAllRoles()
 	if err != nil {
-		log.Println("Error loading roles")
+		log.Printf("Error loading roles (%s)", err)
 		return fmt.Errorf("Error loading roles")
 	}
 
