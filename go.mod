@@ -1,4 +1,4 @@
-module dunv/uauth
+module github.com/dunv/uauth
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
