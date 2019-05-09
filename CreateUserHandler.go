@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/dunv/uhttp"
-	"github.com/dunv/umongo"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type createUserModel struct {
@@ -22,7 +22,7 @@ var createUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	user := r.Context().Value(CtxKeyUser).(User)
 
 	if !user.CheckPermission(CanCreateUsers) {
-		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanCreateUsers))
+		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanCreateUsers), nil)
 		return
 	}
 
@@ -31,18 +31,18 @@ var createUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	err := json.NewDecoder(r.Body).Decode(&userFromRequest)
 	defer r.Body.Close()
 	if err != nil {
-		uhttp.RenderError(w, r, err)
+		uhttp.RenderError(w, r, err, nil)
 		return
 	}
 
 	// Get DB
-	db := r.Context().Value(uhttp.CtxKeyDB).(*umongo.DbSession)
+	db := r.Context().Value(UserDB).(*mongo.Client)
 
 	// Verify all roles exist
 	roleService := NewRoleService(db)
 	allRoles, err := roleService.GetAllRoles()
 	if err != nil {
-		uhttp.RenderError(w, r, err)
+		uhttp.RenderError(w, r, err, nil)
 		return
 	}
 
@@ -56,13 +56,13 @@ var createUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	}
 
 	if len(verifiedRoles) != len(userFromRequest.Roles) {
-		uhttp.RenderError(w, r, fmt.Errorf("Not all desired roles for the new user are valid"))
+		uhttp.RenderError(w, r, fmt.Errorf("Not all desired roles for the new user are valid"), nil)
 		return
 	}
 
 	hashedPassword, _ := HashPassword(userFromRequest.Password)
 	if err != nil {
-		uhttp.RenderError(w, r, err)
+		uhttp.RenderError(w, r, err, nil)
 		return
 	}
 
@@ -76,17 +76,17 @@ var createUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	}
 	err = userService.CreateUser(&userToBeCreated)
 	if err != nil {
-		uhttp.RenderError(w, r, err)
+		uhttp.RenderError(w, r, err, nil)
 		return
 	}
 
-	uhttp.RenderMessageWithStatusCode(w, r, 200, "Created successfully")
+	uhttp.RenderMessageWithStatusCode(w, r, 200, "Created successfully", nil)
 })
 
 // CreateUserHandler <-
 var CreateUserHandler = uhttp.Handler{
 	Methods:      []string{"OPTIONS", "POST"},
 	Handler:      createUserHandler,
-	DbRequired:   true,
+	DbRequired:   []uhttp.ContextKey{UserDB},
 	AuthRequired: true,
 }

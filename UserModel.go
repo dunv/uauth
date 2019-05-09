@@ -5,12 +5,12 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // User user
 type User struct {
-	ID          bson.ObjectId `bson:"_id" json:"id,omitempty"`
+	ID          *primitive.ObjectID `bson:"_id" json:"id,omitempty"`
 	UserName    string        `bson:"userName" json:"userName"`
 	FirstName   string        `bson:"firstName,omitempty" json:"firstName,omitempty"`
 	LastName    string        `bson:"lastName,omitempty" json:"lastName,omitempty"`
@@ -34,7 +34,7 @@ func (u User) String() string {
 
 // UserWithClaims for JWT
 type UserWithClaims struct {
-	ID          bson.ObjectId `json:"id,omitempty"`
+	ID          *primitive.ObjectID `json:"id,omitempty"`
 	UserName    string        `json:"userName"`
 	FirstName   string        `json:"firstName"`
 	LastName    string        `json:"lastName"`
@@ -65,12 +65,6 @@ func (u UserWithClaims) ToUser() User {
 		Permissions: u.Permissions,
 		Roles:       u.Roles,
 	}
-}
-
-// GenerateID generates a random ID for the document
-func (u *User) GenerateID() {
-	newID := bson.NewObjectId()
-	u.ID = newID
 }
 
 // HashPassword Creates a passwordHash

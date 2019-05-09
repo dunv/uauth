@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/dunv/uhttp"
-	"github.com/dunv/umongo"
 )
 
 var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -20,23 +20,30 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	err := json.NewDecoder(r.Body).Decode(&userFromRequest)
 	defer r.Body.Close()
 	if err != nil {
-		uhttp.RenderError(w, r, err)
+		uhttp.RenderError(w, r, err, nil)
 		return
 	}
 
 	// Get DB
-	db := r.Context().Value(uhttp.CtxKeyDB).(*umongo.DbSession)
+	db := r.Context().Value(UserDB).(*mongo.Client)
 	service := NewUserService(db)
 	// Load user to check if it exists!
-	userFromDb, err := service.Get(bson.ObjectIdHex(userFromRequest.ID))
+
+	ID, err := primitive.ObjectIDFromHex(userFromRequest.ID)
 	if err != nil {
-		uhttp.RenderError(w, r, err)
+		uhttp.RenderError(w, r, err, nil)
+		return
+	}
+
+	userFromDb, err := service.Get(ID)
+	if err != nil {
+		uhttp.RenderError(w, r, err, nil)
 		return
 	}
 
 	// Check permission if not modifying "own user"
 	if user.ID != userFromDb.ID && !user.CheckPermission(CanUpdateUsers) {
-		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanUpdateUsers))
+		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanUpdateUsers), nil)
 		return
 	}
 
@@ -50,7 +57,7 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 		roleService := NewRoleService(db)
 		allRoles, err := roleService.GetAllRoles()
 		if err != nil {
-			uhttp.RenderError(w, r, err)
+			uhttp.RenderError(w, r, err, nil)
 			return
 		}
 		verifiedRoles := []string{}
@@ -63,7 +70,7 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 		}
 
 		if len(verifiedRoles) != len(*userFromRequest.Roles) {
-			uhttp.RenderError(w, r, fmt.Errorf("Not all desired roles for the new user are valid"))
+			uhttp.RenderError(w, r, fmt.Errorf("Not all desired roles for the new user are valid"), nil)
 			return
 		}
 	}
@@ -73,24 +80,24 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 		hashedPassword, _ = HashPassword(*userFromRequest.Password)
 		userFromRequest.Password = &hashedPassword
 		if err != nil {
-			uhttp.RenderError(w, r, err)
+			uhttp.RenderError(w, r, err, nil)
 			return
 		}
 	}
 
-	err = service.Update(bson.ObjectIdHex(userFromRequest.ID), userFromRequest)
+	err = service.Update(ID, userFromRequest)
 	if err != nil {
-		uhttp.RenderError(w, r, err)
+		uhttp.RenderError(w, r, err, nil)
 		return
 	}
 
-	uhttp.RenderMessageWithStatusCode(w, r, 200, "Updated successfully")
+	uhttp.RenderMessageWithStatusCode(w, r, 200, "Updated successfully", nil)
 })
 
 // UpdateUserHandler <-
 var UpdateUserHandler = uhttp.Handler{
 	Methods:      []string{"OPTIONS", "POST"},
 	Handler:      updateUserHandler,
-	DbRequired:   true,
+	DbRequired:   []uhttp.ContextKey{UserDB},
 	AuthRequired: true,
 }

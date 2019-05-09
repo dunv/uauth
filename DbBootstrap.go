@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/dunv/umongo"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 const (
@@ -14,7 +14,7 @@ const (
 )
 
 // CreateInitialRolesIfNotExist roles if non-existant
-func CreateInitialRolesIfNotExist(s *umongo.DbSession) {
+func CreateInitialRolesIfNotExist(s *mongo.Client) {
 	roleService := NewRoleService(s)
 	allRoles, err := roleService.GetAllRoles()
 	if err != nil {
@@ -42,7 +42,7 @@ func CreateInitialRolesIfNotExist(s *umongo.DbSession) {
 }
 
 // CreateInitialUsersIfNotExist creates users if non-existant
-func CreateInitialUsersIfNotExist(s *umongo.DbSession) {
+func CreateInitialUsersIfNotExist(s *mongo.Client) {
 	userService := NewUserService(s)
 
 	allUsers, err := userService.List()
@@ -72,7 +72,7 @@ func CreateInitialUsersIfNotExist(s *umongo.DbSession) {
 }
 
 // CreateCustomRolesIfNotExist <-
-func CreateCustomRolesIfNotExist(s *umongo.DbSession, wantedRoles []Role, identifier string) error {
+func CreateCustomRolesIfNotExist(s *mongo.Client, wantedRoles []Role, identifier string) error {
 	roleService := NewRoleService(s)
 	allRoles, err := roleService.GetAllRoles()
 	if err != nil {

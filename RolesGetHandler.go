@@ -5,12 +5,12 @@ import (
 	"net/http"
 
 	"github.com/dunv/uhttp"
-	"github.com/dunv/umongo"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type rolesGetResponse struct {
-	Roles   []Role `json:"roles"`
-	Success bool   `json:"success"`
+	Roles   *[]Role `json:"roles"`
+	Success bool    `json:"success"`
 }
 
 // RolesGetHandler for getting days for the logged in user
@@ -19,13 +19,13 @@ var RolesGetHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reque
 	user := r.Context().Value(CtxKeyUser).(User)
 
 	// Get Roles
-	db := r.Context().Value(uhttp.CtxKeyDB).(*umongo.DbSession)
+	db := r.Context().Value(UserDB).(*mongo.Client)
 	rolesService := NewRoleService(db)
 	roles, err := rolesService.GetMultipleByName(*user.Roles)
 
 	// Check error
 	if err != nil {
-		uhttp.RenderError(w, r, err)
+		uhttp.RenderError(w, r, err, nil)
 		return
 	}
 

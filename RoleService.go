@@ -1,58 +1,64 @@
 package uauth
 
 import (
-	"github.com/dunv/umongo"
-	mgo "gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
+	"context"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
-
-// RolesCollection is the name of the collection in mongo
-const RolesCollection = "roles"
-
-func roleModelIndex() mgo.Index {
-	return mgo.Index{
-		Key:        []string{"name"},
-		Unique:     true,
-		DropDups:   true,
-		Background: true,
-		Sparse:     true,
-	}
-}
 
 // RoleService datastructure
 type RoleService struct {
-	collection *mgo.Collection
+	Client     *mongo.Client
+	Database   string
+	Collection string
 }
 
 // NewRoleService for creating a RoleService
-func NewRoleService(db *umongo.DbSession) *RoleService {
-	collection := db.GetCollection(RolesCollection)
-	collection.EnsureIndex(roleModelIndex())
-	return &RoleService{collection}
+func NewRoleService(db *mongo.Client) *RoleService {
+	return &RoleService{
+		Client:     db,
+		Database:   userDB,
+		Collection: "roles",
+	}
 }
 
 // GetMultipleByName from mongoDB
-func (roleService *RoleService) GetMultipleByName(roleNames []string) ([]Role, error) {
-	var results []Role
-
+func (s *RoleService) GetMultipleByName(roleNames []string) (*[]Role, error) {
 	queryParts := []bson.M{}
 	for _, roleName := range roleNames {
 		queryParts = append(queryParts, bson.M{"name": roleName})
 	}
-
-	err := roleService.collection.Find(bson.M{"$or": queryParts}).All(&results)
-	return results, err
+	return cursorToRoles(s.Client.Database(s.Database).Collection(s.Collection).Find(context.Background(), bson.D{{"$or", queryParts}}))
 }
 
 // GetAllRoles from mongoDB
-func (roleService *RoleService) GetAllRoles() (*[]Role, error) {
-	results := &[]Role{}
-	err := roleService.collection.Find(bson.M{}).All(results)
-	return results, err
+func (s *RoleService) GetAllRoles() (*[]Role, error) {
+	return cursorToRoles(s.Client.Database(s.Database).Collection(s.Collection).Find(context.Background(), bson.D{}))
 }
 
 // CreateRole creates a user in the db
-func (roleService *RoleService) CreateRole(role *Role) error {
-	role.GenerateID()
-	return roleService.collection.Insert(role)
+func (s *RoleService) CreateRole(role *Role) error {
+	_, err := s.Client.Database(s.Database).Collection(s.Collection).InsertOne(context.Background(), role)
+	return err
+}
+
+func cursorToRoles(cur *mongo.Cursor, err error) (*[]Role, error) {
+	if err != nil {
+		return nil, err
+	}
+	var results []Role
+	defer cur.Close(context.Background())
+	for cur.Next(context.Background()) {
+		var result Role
+		err := cur.Decode(&result)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, result)
+	}
+	if err := cur.Err(); err != nil {
+		return nil, err
+	}
+	return &results, nil
 }

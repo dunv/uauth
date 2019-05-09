@@ -1,69 +1,100 @@
 package uauth
 
 import (
-	"github.com/dunv/umongo"
-	mgo "gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
+	"context"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
-
-// UsersCollection is the name of the collection in mongo
-const UsersCollection = "users"
-
-func userModelIndex() mgo.Index {
-	return mgo.Index{
-		Key:        []string{"userName"},
-		Unique:     true,
-		DropDups:   true,
-		Background: true,
-		Sparse:     true,
-	}
-}
 
 // UserService datastructure
 type UserService struct {
-	collection *mgo.Collection
+	Client     *mongo.Client
+	Database   string
+	Collection string
+}
+
+// NewUserService for creating a UserService
+func NewUserService(db *mongo.Client) *UserService {
+	return &UserService{
+		Client:     db,
+		Database:   userDB,
+		Collection: "users",
+	}
 }
 
 // CreateUser creates a user in the db
 func (s *UserService) CreateUser(user *User) error {
-	user.GenerateID()
-	return s.collection.Insert(user)
-}
-
-// NewUserService for creating a UserService
-func NewUserService(db *umongo.DbSession) *UserService {
-	collection := db.GetCollection(UsersCollection)
-	collection.EnsureIndex(userModelIndex())
-	return &UserService{collection}
+	_, err := s.Client.Database(s.Database).Collection(s.Collection).InsertOne(context.Background(), user)
+	return err
 }
 
 // GetByUserName from mongoDB
 func (s *UserService) GetByUserName(userName string) (*User, error) {
-	model := User{}
-	err := s.collection.Find(bson.M{"userName": userName}).One(&model)
-	return &model, err
+	user := &User{}
+	res := s.Client.Database(s.Database).Collection(s.Collection).FindOne(context.Background(), bson.D{{"userName", userName}})
+	if err := res.Decode(user); err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
 // Get <-
-func (s *UserService) Get(ID bson.ObjectId) (*User, error) {
-	model := User{}
-	err := s.collection.Find(bson.M{"_id": ID}).One(&model)
-	return &model, err
+func (s *UserService) Get(ID primitive.ObjectID) (*User, error) {
+	user := &User{}
+	res := s.Client.Database(s.Database).Collection(s.Collection).FindOne(context.Background(), bson.D{{"_id", ID}})
+	if err := res.Decode(user); err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
 // List <-
 func (s *UserService) List() (*[]User, error) {
-	results := &[]User{}
-	err := s.collection.Find(bson.M{}).All(results)
-	return results, err
+	return cursorToUsers(s.Client.Database(s.Database).Collection(s.Collection).Find(context.Background(), bson.D{}))
 }
 
 // Update <-
-func (s *UserService) Update(userID bson.ObjectId, user UpdateUserModel) error {
-	return s.collection.Update(bson.M{"_id": userID}, bson.M{"$set": user})
+func (s *UserService) Update(userID primitive.ObjectID, user UpdateUserModel) error {
+	res := s.Client.Database(s.Database).Collection(s.Collection).FindOneAndUpdate(
+		context.Background(),
+		bson.D{{
+			"_id", userID,
+		}},
+		bson.D{{
+			"$set", user,
+		}})
+
+	return res.Err()
 }
 
 // Delete <-
-func (s *UserService) Delete(ID bson.ObjectId) error {
-	return s.collection.Remove(bson.M{"_id": ID})
+func (s *UserService) Delete(userID primitive.ObjectID) error {
+	_, err := s.Client.Database(s.Database).Collection(s.Collection).DeleteOne(
+		context.Background(),
+		bson.D{{
+			"_id", userID,
+		}})
+	return err
+}
+
+func cursorToUsers(cur *mongo.Cursor, err error) (*[]User, error) {
+	if err != nil {
+		return nil, err
+	}
+	var results []User
+	defer cur.Close(context.Background())
+	for cur.Next(context.Background()) {
+		var result User
+		err := cur.Decode(&result)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, result)
+	}
+	if err := cur.Err(); err != nil {
+		return nil, err
+	}
+	return &results, nil
 }

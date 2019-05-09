@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/dunv/uhttp"
-	"github.com/dunv/umongo"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 var listUsersHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -14,17 +14,17 @@ var listUsersHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Requ
 	user := r.Context().Value(CtxKeyUser).(User)
 
 	if !user.CheckPermission(CanReadUsers) {
-		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanReadUsers))
+		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanReadUsers), nil)
 		return
 	}
 
 	// Get DB
-	db := r.Context().Value(uhttp.CtxKeyDB).(*umongo.DbSession)
+	db := r.Context().Value(UserDB).(*mongo.Client)
 	userService := NewUserService(db)
 	usersFromDb, err := userService.List()
 
 	if err != nil {
-		uhttp.RenderError(w, r, err)
+		uhttp.RenderError(w, r, err, nil)
 		return
 	}
 
@@ -43,6 +43,6 @@ var listUsersHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Requ
 var ListUsersHandler = uhttp.Handler{
 	Methods:      []string{"GET"},
 	Handler:      listUsersHandler,
-	DbRequired:   true,
+	DbRequired:   []uhttp.ContextKey{UserDB},
 	AuthRequired: true,
 }

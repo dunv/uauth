@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/dunv/uhttp"
-	"github.com/dunv/umongo"
 )
 
 var getUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -16,7 +16,7 @@ var getUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reques
 	user := r.Context().Value(CtxKeyUser).(User)
 
 	if !user.CheckPermission(CanReadUsers) {
-		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanReadUsers))
+		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanReadUsers), nil)
 		return
 	}
 
@@ -24,12 +24,18 @@ var getUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reques
 	params := r.Context().Value(uhttp.CtxKeyParams).(map[string]interface{})
 
 	// Get DB
-	db := r.Context().Value(uhttp.CtxKeyDB).(*umongo.DbSession)
+	db := r.Context().Value(UserDB).(*mongo.Client)
 	service := NewUserService(db)
-	userFromDb, err := service.Get(bson.ObjectIdHex(params["userId"].(string)))
+
+	ID, err := primitive.ObjectIDFromHex(params["userId"].(string))
+	if err != nil {
+		uhttp.RenderError(w, r, err, nil)
+		return
+	}
+	userFromDb, err := service.Get(ID)
 
 	if err != nil {
-		uhttp.RenderError(w, r, err)
+		uhttp.RenderError(w, r, err, nil)
 		return
 	}
 
@@ -43,7 +49,7 @@ var getUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reques
 var GetUserHandler = uhttp.Handler{
 	Methods:      []string{"GET"},
 	Handler:      getUserHandler,
-	DbRequired:   true,
+	DbRequired:   []uhttp.ContextKey{UserDB},
 	AuthRequired: true,
 	RequiredParams: uhttp.Params{ParamMap: map[string]uhttp.ParamRequirement{
 		"userId": uhttp.ParamRequirement{AllValues: true},

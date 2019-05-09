@@ -8,7 +8,7 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/dunv/uhttp"
-	"github.com/dunv/umongo"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type loginRequest struct {
@@ -27,18 +27,18 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 	err := json.NewDecoder(r.Body).Decode(&loginRequest)
 	defer r.Body.Close()
 	if err != nil {
-		uhttp.RenderError(w, r, err)
+		uhttp.RenderError(w, r, err, nil)
 		return
 	}
 
-	db := r.Context().Value(uhttp.CtxKeyDB).(*umongo.DbSession)
+	db := r.Context().Value(UserDB).(*mongo.Client)
 	userService := NewUserService(db)
 	userFromDb, err := userService.GetByUserName(loginRequest.User.UserName)
 
 	// Verify user with password
 	if err != nil || !(*userFromDb).CheckPassword(*loginRequest.User.Password) {
 		err = errors.New("No user with this name/password exists")
-		uhttp.RenderError(w, r, err)
+		uhttp.RenderError(w, r, err, nil)
 		return
 	}
 
@@ -48,11 +48,11 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 
 	// // Check error
 	if err != nil {
-		uhttp.RenderError(w, r, err)
+		uhttp.RenderError(w, r, err, nil)
 		return
 	}
 
-	permissions := MergeToPermissions(roles)
+	permissions := MergeToPermissions(*roles)
 
 	// Create jwt-token with the username set
 	var userWithClaims = (*userFromDb).ToUserWithClaims()
@@ -65,7 +65,7 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 	bCryptSecret := r.Context().Value(uhttp.CtxKeyBCryptSecret).(string)
 	signedToken, err := token.SignedString([]byte(bCryptSecret))
 	if err != nil {
-		uhttp.RenderError(w, r, err)
+		uhttp.RenderError(w, r, err, nil)
 	}
 
 	// Add rolesDetails to user-model
@@ -85,5 +85,5 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 var LoginHandler = uhttp.Handler{
 	Handler:    loginHandler,
 	Methods:    []string{"OPTIONS", "POST"},
-	DbRequired: true,
+	DbRequired: []uhttp.ContextKey{UserDB},
 }

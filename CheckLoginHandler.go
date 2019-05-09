@@ -34,7 +34,7 @@ var checkLoginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	err := json.NewDecoder(r.Body).Decode(&checkLoginRequest)
 	defer r.Body.Close()
 	if err != nil {
-		uhttp.RenderError(w, r, err)
+		uhttp.RenderError(w, r, err, nil)
 		return
 	}
 
@@ -52,14 +52,14 @@ var checkLoginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	})
 
 	if err != nil {
-		uhttp.RenderError(w, r, err)
+		uhttp.RenderError(w, r, err, nil)
 		return
 	}
 
 	// If signature is invalid: tell user
 	checkLoginResponse.SignatureValid = token.Valid
 	if !token.Valid {
-		uhttp.RenderError(w, r, fmt.Errorf("Token invalid (signature)"))
+		uhttp.RenderError(w, r, fmt.Errorf("Token invalid (signature)"), nil)
 		return
 	}
 
