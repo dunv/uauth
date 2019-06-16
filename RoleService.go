@@ -33,7 +33,7 @@ func (s *RoleService) GetMultipleByName(roleNames []string) (*[]Role, error) {
 }
 
 // GetAllRoles from mongoDB
-func (s *RoleService) GetAllRoles() (*[]Role, error) {
+func (s *RoleService) List() (*[]Role, error) {
 	return cursorToRoles(s.Client.Database(s.Database).Collection(s.Collection).Find(context.Background(), bson.D{}))
 }
 

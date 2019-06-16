@@ -16,7 +16,7 @@ const (
 // CreateInitialRolesIfNotExist roles if non-existant
 func CreateInitialRolesIfNotExist(s *mongo.Client) {
 	roleService := NewRoleService(s)
-	allRoles, err := roleService.GetAllRoles()
+	allRoles, err := roleService.List()
 	if err != nil {
 		log.Printf("Error loading roles (%s) \n", err)
 		return
@@ -74,7 +74,7 @@ func CreateInitialUsersIfNotExist(s *mongo.Client) {
 // CreateCustomRolesIfNotExist <-
 func CreateCustomRolesIfNotExist(s *mongo.Client, wantedRoles []Role, identifier string) error {
 	roleService := NewRoleService(s)
-	allRoles, err := roleService.GetAllRoles()
+	allRoles, err := roleService.List()
 	if err != nil {
 		log.Printf("Error loading roles (%s)", err)
 		return fmt.Errorf("Error loading roles")

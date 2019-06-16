@@ -55,7 +55,7 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	// Verify all roles exist
 	if userFromRequest.Roles != nil {
 		roleService := NewRoleService(db)
-		allRoles, err := roleService.GetAllRoles()
+		allRoles, err := roleService.List()
 		if err != nil {
 			uhttp.RenderError(w, r, err, nil)
 			return
