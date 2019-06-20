@@ -26,6 +26,8 @@ func NewUserService(db *mongo.Client) *UserService {
 
 // CreateUser creates a user in the db
 func (s *UserService) CreateUser(user *User) error {
+	newObjectID := primitive.NewObjectID()
+	user.ID = &newObjectID
 	_, err := s.Client.Database(s.Database).Collection(s.Collection).InsertOne(context.Background(), user)
 	return err
 }
