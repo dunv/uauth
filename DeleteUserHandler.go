@@ -43,10 +43,9 @@ var deleteUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 
 // DeleteUserHandler <-
 var DeleteUserHandler = uhttp.Handler{
-	Methods:      []string{"OPTIONS", "DELETE"},
-	Handler:      deleteUserHandler,
-	DbRequired:   []uhttp.ContextKey{UserDB},
-	AuthRequired: true,
+	DeleteHandler: deleteUserHandler,
+	DbRequired:    []uhttp.ContextKey{UserDB},
+	AuthRequired:  true,
 	RequiredParams: uhttp.Params{ParamMap: map[string]uhttp.ParamRequirement{
 		"userId": uhttp.ParamRequirement{AllValues: true},
 	}},

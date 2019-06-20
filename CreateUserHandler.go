@@ -85,8 +85,7 @@ var createUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 
 // CreateUserHandler <-
 var CreateUserHandler = uhttp.Handler{
-	Methods:      []string{"OPTIONS", "POST"},
-	Handler:      createUserHandler,
+	PostHandler:  createUserHandler,
 	DbRequired:   []uhttp.ContextKey{UserDB},
 	AuthRequired: true,
 }

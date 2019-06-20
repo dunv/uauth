@@ -47,8 +47,7 @@ var getUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reques
 
 // GetUserHandler <-
 var GetUserHandler = uhttp.Handler{
-	Methods:      []string{"GET"},
-	Handler:      getUserHandler,
+	GetHandler:   getUserHandler,
 	DbRequired:   []uhttp.ContextKey{UserDB},
 	AuthRequired: true,
 	RequiredParams: uhttp.Params{ParamMap: map[string]uhttp.ParamRequirement{

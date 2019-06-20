@@ -41,8 +41,7 @@ var listRolesHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Requ
 
 // ListRolesHandler <-
 var ListRolesHandler = uhttp.Handler{
-	Methods:      []string{"GET"},
-	Handler:      listRolesHandler,
+	GetHandler:   listRolesHandler,
 	DbRequired:   []uhttp.ContextKey{UserDB},
 	AuthRequired: true,
 }

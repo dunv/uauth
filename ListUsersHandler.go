@@ -41,8 +41,7 @@ var listUsersHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Requ
 
 // ListUsersHandler <-
 var ListUsersHandler = uhttp.Handler{
-	Methods:      []string{"GET"},
-	Handler:      listUsersHandler,
+	GetHandler:   listUsersHandler,
 	DbRequired:   []uhttp.ContextKey{UserDB},
 	AuthRequired: true,
 }

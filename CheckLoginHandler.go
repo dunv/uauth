@@ -80,6 +80,5 @@ var checkLoginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 
 // CheckLoginHandler for testing a user's webtoken
 var CheckLoginHandler = uhttp.Handler{
-	Handler: checkLoginHandler,
-	Methods: []string{"OPTIONS", "POST"},
+	PostHandler: checkLoginHandler,
 }

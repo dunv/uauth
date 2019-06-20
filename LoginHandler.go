@@ -83,7 +83,6 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 
 // LoginHandler handler for getting JSON web token
 var LoginHandler = uhttp.Handler{
-	Handler:    loginHandler,
-	Methods:    []string{"OPTIONS", "POST"},
-	DbRequired: []uhttp.ContextKey{UserDB},
+	PostHandler: loginHandler,
+	DbRequired:  []uhttp.ContextKey{UserDB},
 }

@@ -96,8 +96,7 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 
 // UpdateUserHandler <-
 var UpdateUserHandler = uhttp.Handler{
-	Methods:      []string{"OPTIONS", "POST"},
-	Handler:      updateUserHandler,
+	PostHandler:  updateUserHandler,
 	DbRequired:   []uhttp.ContextKey{UserDB},
 	AuthRequired: true,
 }
