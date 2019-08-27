@@ -4,7 +4,8 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 
 	"go.mongodb.org/mongo-driver/mongo"
 )

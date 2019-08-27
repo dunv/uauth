@@ -3,9 +3,10 @@ package uauth
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/dunv/uhttp"
