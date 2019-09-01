@@ -3,10 +3,9 @@ package uauth
 import (
 	"time"
 
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
-// RecordTrail <-
 type RecordTrail struct {
 	Owner      *string    `bson:"owner,omitempty" json:"owner,omitempty"`
 	CreatedBy  *string    `bson:"createdBy,omitempty" json:"createdBy,omitempty"`
@@ -15,10 +14,10 @@ type RecordTrail struct {
 	ModifiedAt *time.Time `bson:"modifiedAt,omitempty" json:"modifiedAt,omitempty"`
 }
 
-// GenerateUpdateModifiedStatement <-
-func GenerateUpdateModifiedStatement(time time.Time, user User) bson.M {
-	return bson.M{
-		"recordTrail.modifiedAt": time,
-		"recordTrail.modifiedBy": user.UserName,
-	}
+func GenerateUpdateModifiedStatement(time time.Time, user User) bson.D {
+	return bson.D{{
+		Key: "recordTrail.modifiedAt", Value: time,
+	}, {
+		Key: "recordTrail.modifiedBy", Value: user.UserName,
+	}}
 }
