@@ -14,7 +14,7 @@ type User struct {
 	UserName    string              `bson:"userName" json:"userName"`
 	FirstName   string              `bson:"firstName,omitempty" json:"firstName,omitempty"`
 	LastName    string              `bson:"lastName,omitempty" json:"lastName,omitempty"`
-	Password    *string             `bson:"password" json:"password,omitempty"`
+	Password    *string             `bson:"password,omitempty" json:"password,omitempty"`
 	Permissions *[]Permission       `bson:"-" json:"permissions,omitempty"`
 	Roles       *[]string           `bson:"roles" json:"roles,omitempty"`
 }
@@ -73,6 +73,9 @@ func HashPassword(password string) (string, error) {
 
 // CheckPassword checks a password hash of a user
 func (u User) CheckPassword(plainTextPassword string) bool {
+	if u.Password == nil {
+		return false
+	}
 	err := bcrypt.CompareHashAndPassword([]byte(*u.Password), []byte(plainTextPassword))
 	return err == nil
 }
