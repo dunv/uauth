@@ -8,6 +8,7 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
+	log "github.com/sirupsen/logrus"
 )
 
 // ContextKey so go does not throw an error
@@ -52,5 +53,8 @@ type Error struct {
 func renderErrorResponse(w http.ResponseWriter) {
 	js, _ := json.Marshal(Error{"Unauthorized, please make sure you are sending a valid JWT token in the \"Authorization\" header."})
 	w.WriteHeader(http.StatusUnauthorized)
-	w.Write(js)
+	_, err := w.Write(js)
+	if err != nil {
+		log.Errorf("Error rendering response (%s)", err)
+	}
 }

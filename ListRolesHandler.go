@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/dunv/uhttp"
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -28,15 +29,10 @@ var listRolesHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	// // Strip passwords
-	// users := *usersFromDb
-	// for index := range users {
-	// 	user := &users[index]
-	// 	user.Password = nil
-	// }
-
-	json.NewEncoder(w).Encode(*rolesFromDb)
-	return
+	err = json.NewEncoder(w).Encode(*rolesFromDb)
+	if err != nil {
+		log.Errorf("Error rendering response (%s)", err)
+	}
 })
 
 // ListRolesHandler <-

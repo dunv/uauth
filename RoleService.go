@@ -29,7 +29,7 @@ func (s *RoleService) GetMultipleByName(roleNames []string) (*[]Role, error) {
 	for _, roleName := range roleNames {
 		queryParts = append(queryParts, bson.M{"name": roleName})
 	}
-	return cursorToRoles(s.Client.Database(s.Database).Collection(s.Collection).Find(context.Background(), bson.D{{"$or", queryParts}}))
+	return cursorToRoles(s.Client.Database(s.Database).Collection(s.Collection).Find(context.Background(), bson.D{{Key: "$or", Value: queryParts}}))
 }
 
 // GetAllRoles from mongoDB

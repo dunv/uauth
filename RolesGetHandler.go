@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/dunv/uhttp"
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -30,8 +31,11 @@ var RolesGetHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Encode response
-	json.NewEncoder(w).Encode(rolesGetResponse{
+	err = json.NewEncoder(w).Encode(rolesGetResponse{
 		Success: true,
 		Roles:   roles,
 	})
+	if err != nil {
+		log.Errorf("Error rendering response (%s)", err)
+	}
 })

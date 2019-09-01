@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/dunv/uhttp"
@@ -16,7 +15,7 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	user := r.Context().Value(CtxKeyUser).(User)
 
 	// Parse requestedUserModel
-	var userFromRequest UpdateUserModel
+	var userFromRequest User
 	err := json.NewDecoder(r.Body).Decode(&userFromRequest)
 	defer r.Body.Close()
 	if err != nil {
@@ -29,13 +28,12 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	service := NewUserService(db)
 	// Load user to check if it exists!
 
-	ID, err := primitive.ObjectIDFromHex(userFromRequest.ID)
-	if err != nil {
-		uhttp.RenderError(w, r, err, nil)
+	if user.ID == nil {
+		uhttp.RenderError(w, r, fmt.Errorf("UserID is not set"), nil)
 		return
 	}
 
-	userFromDb, err := service.Get(ID)
+	userFromDb, err := service.Get(*userFromRequest.ID)
 	if err != nil {
 		uhttp.RenderError(w, r, err, nil)
 		return
@@ -85,7 +83,10 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 		}
 	}
 
-	err = service.Update(ID, userFromRequest)
+	// Make sure username cannot change
+	userFromRequest.UserName = userFromDb.UserName
+
+	err = service.Update(userFromRequest)
 	if err != nil {
 		uhttp.RenderError(w, r, err, nil)
 		return

@@ -36,7 +36,10 @@ func CreateInitialRolesIfNotExist(s *mongo.Client) {
 		}}
 		for _, role := range roles {
 			log.Printf("role: %s", role.Name)
-			roleService.CreateRole(&role)
+			err = roleService.CreateRole(&role)
+			if err != nil {
+				log.Errorf("Error creating role (%s)", err)
+			}
 		}
 		log.Println("Done.")
 	}
@@ -66,7 +69,10 @@ func CreateInitialUsersIfNotExist(s *mongo.Client) {
 			hashedPassword, _ := user.HashPassword(pw)
 			user.Password = &hashedPassword
 			log.Printf("user: %s, pw: %s", user.UserName, pw)
-			userService.CreateUser(&user)
+			err = userService.CreateUser(&user)
+			if err != nil {
+				log.Errorf("Error creating user (%s)", err)
+			}
 		}
 		log.Println("Done.")
 	}
@@ -100,7 +106,7 @@ func CreateCustomRolesIfNotExist(s *mongo.Client, wantedRoles []Role, identifier
 		log.Printf("Creating initial roles (%s)... \n", identifier)
 		for _, role := range missingRoles {
 			log.Printf("role: %s", role.Name)
-			roleService.CreateRole(&role)
+			roleService.CreateRole(&role) // nolint
 		}
 		log.Println("Done.")
 	}
@@ -110,7 +116,10 @@ func CreateCustomRolesIfNotExist(s *mongo.Client, wantedRoles []Role, identifier
 
 func randStr(len int) string {
 	buff := make([]byte, len)
-	rand.Read(buff)
+	_, err := rand.Read(buff)
+	if err != nil {
+		log.Errorf("Error creating random number (%s)", err)
+	}
 	str := base64.StdEncoding.EncodeToString(buff)
 	// Base 64 can be longer than len
 	return str[:len]

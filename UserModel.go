@@ -4,28 +4,19 @@ import (
 	"fmt"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	"golang.org/x/crypto/bcrypt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // User user
 type User struct {
 	ID          *primitive.ObjectID `bson:"_id" json:"id,omitempty"`
-	UserName    string        `bson:"userName" json:"userName"`
-	FirstName   string        `bson:"firstName,omitempty" json:"firstName,omitempty"`
-	LastName    string        `bson:"lastName,omitempty" json:"lastName,omitempty"`
-	Password    *string       `bson:"password" json:"password,omitempty"`
-	Permissions *[]Permission `bson:"-" json:"permissions,omitempty"`
-	Roles       *[]string     `bson:"roles" json:"roles,omitempty"`
-}
-
-// UpdateUserModel for updating parts of a user
-type UpdateUserModel struct {
-	ID        string    `bson:"-" json:"id"`
-	FirstName *string   `bson:"firstName,omitempty" json:"firstName,omitempty"`
-	LastName  *string   `bson:"lastName,omitempty" json:"lastName,omitempty"`
-	Password  *string   `bson:"password,omitempty" json:"password,omitempty"`
-	Roles     *[]string `bson:"roles,omitempty" json:"roles,omitempty"`
+	UserName    string              `bson:"userName" json:"userName"`
+	FirstName   string              `bson:"firstName,omitempty" json:"firstName,omitempty"`
+	LastName    string              `bson:"lastName,omitempty" json:"lastName,omitempty"`
+	Password    *string             `bson:"password" json:"password,omitempty"`
+	Permissions *[]Permission       `bson:"-" json:"permissions,omitempty"`
+	Roles       *[]string           `bson:"roles" json:"roles,omitempty"`
 }
 
 func (u User) String() string {
@@ -35,11 +26,11 @@ func (u User) String() string {
 // UserWithClaims for JWT
 type UserWithClaims struct {
 	ID          *primitive.ObjectID `json:"id,omitempty"`
-	UserName    string        `json:"userName"`
-	FirstName   string        `json:"firstName"`
-	LastName    string        `json:"lastName"`
-	Permissions *[]Permission `json:"permissions"`
-	Roles       *[]string     `json:"roles"`
+	UserName    string              `json:"userName"`
+	FirstName   string              `json:"firstName"`
+	LastName    string              `json:"lastName"`
+	Permissions *[]Permission       `json:"permissions"`
+	Roles       *[]string           `json:"roles"`
 	jwt.StandardClaims
 }
 

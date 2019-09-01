@@ -6,9 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 )
 
-// AuthBasic <-
 func AuthBasic(wantedUsername string, wantedMd5Password string) func(next http.HandlerFunc) http.HandlerFunc {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +23,10 @@ func AuthBasic(wantedUsername string, wantedMd5Password string) func(next http.H
 				})
 				w.Header().Add("Content-Type", "application/json")
 				w.WriteHeader(401)
-				w.Write(js)
+				_, err := w.Write(js)
+				if err != nil {
+					log.Errorf("Error rendering response (%s)", err)
+				}
 				return
 			}
 

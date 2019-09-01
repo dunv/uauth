@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/dunv/uhttp"
+	log "github.com/sirupsen/logrus"
 )
 
 var getUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -41,8 +42,10 @@ var getUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reques
 
 	userFromDb.Password = nil
 
-	json.NewEncoder(w).Encode(*userFromDb)
-	return
+	err = json.NewEncoder(w).Encode(*userFromDb)
+	if err != nil {
+		log.Errorf("Error rendering response (%s)", err)
+	}
 })
 
 // GetUserHandler <-

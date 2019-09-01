@@ -8,6 +8,7 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/dunv/uhttp"
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -79,6 +80,9 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 		User: *userFromDb,
 		JWT:  signedToken,
 	})
+	if err != nil {
+		log.Errorf("Error rendering response (%s)", err)
+	}
 })
 
 // LoginHandler handler for getting JSON web token

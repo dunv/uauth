@@ -10,11 +10,12 @@ import (
 )
 
 type createUserModel struct {
-	UserName  string   `bson:"userName" json:"userName"`
-	FirstName string   `bson:"firstName,omitempty" json:"firstName,omitempty"`
-	LastName  string   `bson:"lastName,omitempty" json:"lastName,omitempty"`
-	Password  string   `bson:"password" json:"password,omitempty"`
-	Roles     []string `bson:"roles" json:"roles"`
+	UserName             string           `bson:"userName" json:"userName"`
+	FirstName            string           `bson:"firstName,omitempty" json:"firstName,omitempty"`
+	LastName             string           `bson:"lastName,omitempty" json:"lastName,omitempty"`
+	Password             string           `bson:"password" json:"password,omitempty"`
+	AdditionalAttributes *json.RawMessage `bson:"additionalAttributes" json:"additionalAttirbutes,omitempty"`
+	Roles                []string         `bson:"roles" json:"roles"`
 }
 
 var createUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -83,7 +84,6 @@ var createUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	uhttp.RenderMessageWithStatusCode(w, r, 200, "Created successfully", nil)
 })
 
-// CreateUserHandler <-
 var CreateUserHandler = uhttp.Handler{
 	PostHandler:  createUserHandler,
 	DbRequired:   []uhttp.ContextKey{UserDB},

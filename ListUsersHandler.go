@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/dunv/uhttp"
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -35,8 +36,10 @@ var listUsersHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Requ
 		user.Password = nil
 	}
 
-	json.NewEncoder(w).Encode(*usersFromDb)
-	return
+	err = json.NewEncoder(w).Encode(*usersFromDb)
+	if err != nil {
+		log.Errorf("Error rendering response (%s)", err)
+	}
 })
 
 // ListUsersHandler <-

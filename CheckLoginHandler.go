@@ -76,7 +76,10 @@ var checkLoginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	if !checkLoginResponse.Valid {
 		w.WriteHeader(http.StatusUnauthorized)
 	}
-	json.NewEncoder(w).Encode(checkLoginResponse)
+	err = json.NewEncoder(w).Encode(checkLoginResponse)
+	if err != nil {
+		log.Errorf("Error rendering response (%s)", err)
+	}
 })
 
 // CheckLoginHandler for testing a user's webtoken
