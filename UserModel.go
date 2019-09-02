@@ -64,14 +64,18 @@ func (u *User) CheckPermission(permission Permission) bool {
 	return false
 }
 
-func (u *User) MarshalAdditionalAttributes() error {
-	if u.AdditionalAttributesRaw != nil && additionalAttributesModel != nil {
+func (u *User) UnmarshalAdditionalAttributes() error {
+	if additionalAttributesModel != nil {
 		additionalAttributes := additionalAttributesModel.CloneEmpty()
-		err := bson.Unmarshal(u.AdditionalAttributesRaw, additionalAttributes)
-		if err != nil {
-			return fmt.Errorf("could not unmarshal %s", err)
+		if u.AdditionalAttributesRaw != nil {
+			err := bson.Unmarshal(u.AdditionalAttributesRaw, additionalAttributes)
+			if err != nil {
+				return fmt.Errorf("could not unmarshal %s", err)
+			}
+			u.AdditionalAttributes = additionalAttributes
+		} else if additionalAttributesModel != nil {
+			u.AdditionalAttributes = additionalAttributes
 		}
-		u.AdditionalAttributes = additionalAttributes
 	}
 	return nil
 }

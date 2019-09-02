@@ -40,7 +40,7 @@ func (s *UserService) GetByUserName(userName string) (*User, error) {
 	if err := res.Decode(user); err != nil {
 		return nil, fmt.Errorf("Could not decode (%s)", err)
 	}
-	err := user.MarshalAdditionalAttributes()
+	err := user.UnmarshalAdditionalAttributes()
 	if err != nil {
 		return nil, fmt.Errorf("Could not marshal additional attributes (%s)", err)
 	}
@@ -53,7 +53,7 @@ func (s *UserService) Get(ID primitive.ObjectID) (*User, error) {
 	if err := res.Decode(user); err != nil {
 		return nil, err
 	}
-	err := user.MarshalAdditionalAttributes()
+	err := user.UnmarshalAdditionalAttributes()
 	if err != nil {
 		return nil, fmt.Errorf("Could not marshal additional attributes (%s)", err)
 	}
@@ -99,7 +99,7 @@ func cursorToUsers(cur *mongo.Cursor, err error) (*[]User, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error marshalling decoding (%s)", err)
 		}
-		err = result.MarshalAdditionalAttributes()
+		err = result.UnmarshalAdditionalAttributes()
 		if err != nil {
 			return nil, fmt.Errorf("error marshalling additional attributes (%s)", err)
 		}

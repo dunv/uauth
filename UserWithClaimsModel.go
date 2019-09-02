@@ -72,15 +72,17 @@ func (u *UserWithClaimsRaw) ToUser() User {
 }
 
 func (u *UserWithClaimsRaw) UnmarshalAdditionalAttributes() error {
-	additionalAttributes := additionalAttributesModel.CloneEmpty()
-	if u.AdditionalAttributesRaw != nil && additionalAttributesModel != nil {
-		err := json.Unmarshal(u.AdditionalAttributesRaw, additionalAttributes)
-		if err != nil {
-			return fmt.Errorf("could not unmarshal %s", err)
+	if additionalAttributesModel != nil {
+		additionalAttributes := additionalAttributesModel.CloneEmpty()
+		if u.AdditionalAttributesRaw != nil {
+			err := bson.Unmarshal(u.AdditionalAttributesRaw, additionalAttributes)
+			if err != nil {
+				return fmt.Errorf("could not unmarshal %s", err)
+			}
+			u.AdditionalAttributes = additionalAttributes
+		} else if additionalAttributesModel != nil {
+			u.AdditionalAttributes = additionalAttributes
 		}
-		u.AdditionalAttributes = additionalAttributes
-	} else if additionalAttributesModel != nil {
-		u.AdditionalAttributes = additionalAttributes
 	}
 	return nil
 }
