@@ -66,11 +66,11 @@ var checkLoginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 
 	// Extract claims and use validity check
 	if userWithClaims, ok := token.Claims.(*UserWithClaimsRaw); ok {
-		checkLoginResponse.User = userWithClaims.ToUser()
-		err = checkLoginResponse.User.UnmarshalAdditionalAttributes()
+		err = userWithClaims.UnmarshalAdditionalAttributes()
 		if err != nil {
 			log.Infof("Could not unmarshal (%s)", err)
 		}
+		checkLoginResponse.User = userWithClaims.ToUser()
 		checkLoginResponse.ContainsRequiredAttributes = true
 		checkLoginResponse.IssuedBeforeNow = userWithClaims.IssuedAt <= int64(time.Now().Unix())
 		checkLoginResponse.ExpiryAfterNow = userWithClaims.ExpiresAt >= int64(time.Now().Unix())
