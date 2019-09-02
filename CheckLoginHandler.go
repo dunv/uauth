@@ -43,7 +43,7 @@ var checkLoginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 
 	// Parse token and check signature
 	bCryptSecret := r.Context().Value(uhttp.CtxKeyBCryptSecret).(string)
-	token, err := jwt.ParseWithClaims(checkLoginRequest.Token, &UserWithClaims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(checkLoginRequest.Token, &UserWithClaimsRaw{}, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			log.Println("Returning wrong signing method")
@@ -65,8 +65,12 @@ var checkLoginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	}
 
 	// Extract claims and use validity check
-	if userWithClaims, ok := token.Claims.(*UserWithClaims); ok {
+	if userWithClaims, ok := token.Claims.(*UserWithClaimsRaw); ok {
 		checkLoginResponse.User = userWithClaims.ToUser()
+		err = userWithClaims.UnmarshalAdditionalAttributes()
+		if err != nil {
+			log.Infof("Could not unmarshal (%s)", err)
+		}
 		checkLoginResponse.ContainsRequiredAttributes = true
 		checkLoginResponse.IssuedBeforeNow = userWithClaims.IssuedAt <= int64(time.Now().Unix())
 		checkLoginResponse.ExpiryAfterNow = userWithClaims.ExpiresAt >= int64(time.Now().Unix())
