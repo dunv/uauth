@@ -41,6 +41,7 @@ func Auth(bCryptSecret string) func(next http.HandlerFunc) http.HandlerFunc {
 				if err != nil {
 					log.Infof("Login failed (%s)", err)
 					renderErrorResponse(w)
+					return
 				}
 				// fmt.Printf("after unmarshal %+v \n", userWithClaims)
 				user := userWithClaims.ToUser()

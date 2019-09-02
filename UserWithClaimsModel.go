@@ -75,9 +75,9 @@ func (u *UserWithClaimsRaw) UnmarshalAdditionalAttributes() error {
 	if additionalAttributesModel != nil {
 		additionalAttributes := additionalAttributesModel.CloneEmpty()
 		if u.AdditionalAttributesRaw != nil {
-			err := bson.Unmarshal(u.AdditionalAttributesRaw, additionalAttributes)
+			err := json.Unmarshal(u.AdditionalAttributesRaw, additionalAttributes)
 			if err != nil {
-				return fmt.Errorf("could not unmarshal %s", err)
+				return fmt.Errorf("could not unmarshal (%s)", err)
 			}
 			u.AdditionalAttributes = additionalAttributes
 		} else if additionalAttributesModel != nil {
