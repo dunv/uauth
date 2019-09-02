@@ -67,7 +67,7 @@ var checkLoginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	// Extract claims and use validity check
 	if userWithClaims, ok := token.Claims.(*UserWithClaimsRaw); ok {
 		checkLoginResponse.User = userWithClaims.ToUser()
-		err = userWithClaims.UnmarshalAdditionalAttributes()
+		err = checkLoginResponse.User.UnmarshalAdditionalAttributes()
 		if err != nil {
 			log.Infof("Could not unmarshal (%s)", err)
 		}
