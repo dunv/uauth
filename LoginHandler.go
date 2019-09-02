@@ -2,7 +2,7 @@ package uauth
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -17,8 +17,9 @@ type loginRequest struct {
 }
 
 type loginResponse struct {
-	User User   `json:"user"`
-	JWT  string `json:"jwt"`
+	User    User           `json:"user"`
+	JWTUser UserWithClaims `json:"jwtUser"`
+	JWT     string         `json:"jwt"`
 }
 
 var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -38,8 +39,7 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 
 	// Verify user with password
 	if err != nil || !(*userFromDb).CheckPassword(*loginRequest.User.Password) {
-		err = errors.New("No user with this name/password exists")
-		uhttp.RenderError(w, r, err, nil)
+		uhttp.RenderError(w, r, fmt.Errorf("No user with this name/password exists (%s)", err), nil)
 		return
 	}
 
@@ -47,7 +47,7 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 	rolesService := NewRoleService(db)
 	roles, err := rolesService.GetMultipleByName(*userFromDb.Roles)
 
-	// // Check error
+	// Check error
 	if err != nil {
 		uhttp.RenderError(w, r, err, nil)
 		return
@@ -57,6 +57,11 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 
 	// Create jwt-token with the username set
 	var userWithClaims = (*userFromDb).ToUserWithClaims()
+	err = userWithClaims.UnmarshalAdditionalAttributes()
+	if err != nil {
+		uhttp.RenderError(w, r, fmt.Errorf("Could not unmarshal additonalAttributes (%s)", err), nil)
+		return
+	}
 	userWithClaims.IssuedAt = int64(time.Now().Unix())
 	userWithClaims.Issuer = "brauen_login"
 	userWithClaims.ExpiresAt = int64(time.Now().Unix() + 604800)
@@ -77,8 +82,9 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 
 	// Render response
 	err = json.NewEncoder(w).Encode(loginResponse{
-		User: *userFromDb,
-		JWT:  signedToken,
+		User:    *userFromDb,
+		JWTUser: userWithClaims,
+		JWT:     signedToken,
 	})
 	if err != nil {
 		log.Errorf("Error rendering response (%s)", err)

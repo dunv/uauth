@@ -22,7 +22,7 @@ func Auth(bCryptSecret string) func(next http.HandlerFunc) http.HandlerFunc {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			// next.ServeHTTP(w, r)
-			token, err := jwt.ParseWithClaims(r.Header.Get("Authorization"), &UserWithClaims{}, func(token *jwt.Token) (interface{}, error) {
+			token, err := jwt.ParseWithClaims(r.Header.Get("Authorization"), &UserWithClaimsRaw{}, func(token *jwt.Token) (interface{}, error) {
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 					return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 				}
@@ -30,11 +30,19 @@ func Auth(bCryptSecret string) func(next http.HandlerFunc) http.HandlerFunc {
 			})
 
 			if err != nil {
+				log.Infof("Login failed (%s)", err)
 				renderErrorResponse(w)
 				return
 			}
 
-			if userWithClaims, ok := token.Claims.(*UserWithClaims); ok && token.Valid && userWithClaims.IssuedAt <= int64(time.Now().Unix()) && userWithClaims.ExpiresAt >= int64(time.Now().Unix()) {
+			if userWithClaims, ok := token.Claims.(*UserWithClaimsRaw); ok && token.Valid && userWithClaims.IssuedAt <= int64(time.Now().Unix()) && userWithClaims.ExpiresAt >= int64(time.Now().Unix()) {
+				// fmt.Printf("before unmarshal %+v \n", userWithClaims)
+				err = userWithClaims.UnmarshalAdditionalAttributes()
+				if err != nil {
+					log.Infof("Login failed (%s)", err)
+					renderErrorResponse(w)
+				}
+				// fmt.Printf("after unmarshal %+v \n", userWithClaims)
 				user := userWithClaims.ToUser()
 				ctx := context.WithValue(r.Context(), CtxKeyUser, user)
 				next.ServeHTTP(w, r.WithContext(ctx))

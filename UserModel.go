@@ -3,76 +3,50 @@ package uauth
 import (
 	"fmt"
 
-	jwt "github.com/dgrijalva/jwt-go"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // User user
 type User struct {
-	ID          *primitive.ObjectID `bson:"_id" json:"id,omitempty"`
-	UserName    string              `bson:"userName" json:"userName"`
-	FirstName   string              `bson:"firstName,omitempty" json:"firstName,omitempty"`
-	LastName    string              `bson:"lastName,omitempty" json:"lastName,omitempty"`
-	Password    *string             `bson:"password,omitempty" json:"password,omitempty"`
-	Permissions *[]Permission       `bson:"-" json:"permissions,omitempty"`
-	Roles       *[]string           `bson:"roles" json:"roles,omitempty"`
+	ID                      *primitive.ObjectID               `bson:"_id" json:"id,omitempty"`
+	UserName                string                            `bson:"userName" json:"userName"`
+	FirstName               string                            `bson:"firstName,omitempty" json:"firstName,omitempty"`
+	LastName                string                            `bson:"lastName,omitempty" json:"lastName,omitempty"`
+	Password                *string                           `bson:"password,omitempty" json:"password,omitempty"`
+	Permissions             *[]Permission                     `bson:"-" json:"permissions,omitempty"`
+	AdditionalAttributesRaw bson.Raw                          `bson:"additionalAttributes,omitempty" json:"-"`
+	AdditionalAttributes    AdditionalUserAttributesInterface `bson:"-"  json:"additionalAttributes,omitempty"`
+	Roles                   *[]string                         `bson:"roles" json:"roles,omitempty"`
 }
 
-func (u User) String() string {
+func (u *User) String() string {
 	return fmt.Sprintf("User{id:'%s' userName:'%s' firstName:'%s' lastName:'%s' roles:'%s'}", u.ID, u.UserName, u.FirstName, u.LastName, *u.Roles)
 }
 
-// UserWithClaims for JWT
-type UserWithClaims struct {
-	ID          *primitive.ObjectID `json:"id,omitempty"`
-	UserName    string              `json:"userName"`
-	FirstName   string              `json:"firstName"`
-	LastName    string              `json:"lastName"`
-	Permissions *[]Permission       `json:"permissions"`
-	Roles       *[]string           `json:"roles"`
-	jwt.StandardClaims
-}
-
 // ToUserWithClaims creates a WithClaims model from a User model
-func (u User) ToUserWithClaims() UserWithClaims {
+func (u *User) ToUserWithClaims() UserWithClaims {
 	return UserWithClaims{
-		ID:          u.ID,
-		UserName:    u.UserName,
-		FirstName:   u.FirstName,
-		LastName:    u.LastName,
-		Permissions: u.Permissions,
-		Roles:       u.Roles,
-	}
-}
-
-// ToUser creates a User model from a UserWithClaims model
-func (u UserWithClaims) ToUser() User {
-	return User{
-		ID:          u.ID,
-		UserName:    u.UserName,
-		FirstName:   u.FirstName,
-		LastName:    u.LastName,
-		Permissions: u.Permissions,
-		Roles:       u.Roles,
+		ID:                      u.ID,
+		UserName:                u.UserName,
+		FirstName:               u.FirstName,
+		LastName:                u.LastName,
+		Permissions:             u.Permissions,
+		AdditionalAttributesRaw: u.AdditionalAttributesRaw,
+		Roles:                   u.Roles,
 	}
 }
 
 // HashPassword Creates a passwordHash
 // Remove in refactor
-func (u User) HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 12)
-	return string(bytes), err
-}
-
-// HashPassword Creates a passwordHash
-func HashPassword(password string) (string, error) {
+func (u *User) HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	return string(bytes), err
 }
 
 // CheckPassword checks a password hash of a user
-func (u User) CheckPassword(plainTextPassword string) bool {
+func (u *User) CheckPassword(plainTextPassword string) bool {
 	if u.Password == nil {
 		return false
 	}
@@ -81,11 +55,23 @@ func (u User) CheckPassword(plainTextPassword string) bool {
 }
 
 // CheckPermission check if user has a permission
-func (u User) CheckPermission(permission Permission) bool {
+func (u *User) CheckPermission(permission Permission) bool {
 	for _, userPerm := range *u.Permissions {
 		if userPerm == permission {
 			return true
 		}
 	}
 	return false
+}
+
+func (u *User) MarshalAdditionalAttributes() error {
+	if u.AdditionalAttributesRaw != nil && additionalAttributesModel != nil {
+		additionalAttributes := additionalAttributesModel.CloneEmpty()
+		err := bson.Unmarshal(u.AdditionalAttributesRaw, additionalAttributes)
+		if err != nil {
+			return fmt.Errorf("could not unmarshal %s", err)
+		}
+		u.AdditionalAttributes = additionalAttributes
+	}
+	return nil
 }

@@ -2,7 +2,6 @@ package uauth
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -39,7 +38,11 @@ func (s *UserService) GetByUserName(userName string) (*User, error) {
 	user := &User{}
 	res := s.Client.Database(s.Database).Collection(s.Collection).FindOne(context.Background(), bson.D{{Key: "userName", Value: userName}})
 	if err := res.Decode(user); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Could not decode (%s)", err)
+	}
+	err := user.MarshalAdditionalAttributes()
+	if err != nil {
+		return nil, fmt.Errorf("Could not marshal additional attributes (%s)", err)
 	}
 	return user, nil
 }
@@ -49,6 +52,10 @@ func (s *UserService) Get(ID primitive.ObjectID) (*User, error) {
 	res := s.Client.Database(s.Database).Collection(s.Collection).FindOne(context.Background(), bson.D{{Key: "_id", Value: ID}})
 	if err := res.Decode(user); err != nil {
 		return nil, err
+	}
+	err := user.MarshalAdditionalAttributes()
+	if err != nil {
+		return nil, fmt.Errorf("Could not marshal additional attributes (%s)", err)
 	}
 	return user, nil
 }
@@ -73,42 +80,6 @@ func (s *UserService) Update(user User) error {
 	return res.Err()
 }
 
-func (s *UserService) GetAdditionalAttributes(userName string, additionalAttributes interface{}) error {
-	res := s.Client.Database(s.Database).Collection(s.Collection).FindOne(context.Background(), bson.D{{Key: "userName", Value: userName}})
-	if res.Err() != nil {
-		return res.Err()
-	}
-
-	type tmpModel struct {
-		AdditionlAttributes *json.RawMessage `bson:"additionalAttributes,omitempty" json:"additionalAttributes,omitempty"`
-	}
-	tmp := tmpModel{}
-	if err := res.Decode(&tmp); err != nil {
-		return fmt.Errorf("decoding issue %s", err)
-	}
-
-	if tmp.AdditionlAttributes != nil {
-		err := json.Unmarshal(*tmp.AdditionlAttributes, &additionalAttributes)
-		if err != nil {
-			return fmt.Errorf("could not unmarshal %s", err)
-		}
-	}
-
-	return nil
-
-}
-
-func (s *UserService) UpdateAdditionalAttributes(userName string, additionalAttributes interface{}) error {
-	res := s.Client.Database(s.Database).Collection(s.Collection).FindOneAndUpdate(
-		context.Background(),
-		bson.D{{Key: "userName", Value: userName}},
-		bson.D{{Key: "$set", Value: bson.D{
-			{Key: "additionalAttributes", Value: additionalAttributes},
-		}}})
-
-	return res.Err()
-}
-
 func (s *UserService) Delete(userID primitive.ObjectID) error {
 	_, err := s.Client.Database(s.Database).Collection(s.Collection).DeleteOne(
 		context.Background(),
@@ -126,7 +97,11 @@ func cursorToUsers(cur *mongo.Cursor, err error) (*[]User, error) {
 		var result User
 		err := cur.Decode(&result)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error marshalling decoding (%s)", err)
+		}
+		err = result.MarshalAdditionalAttributes()
+		if err != nil {
+			return nil, fmt.Errorf("error marshalling additional attributes (%s)", err)
 		}
 		results = append(results, result)
 	}
@@ -134,4 +109,15 @@ func cursorToUsers(cur *mongo.Cursor, err error) (*[]User, error) {
 		return nil, err
 	}
 	return &results, nil
+}
+
+func (s *UserService) UpdateAdditionalAttributes(userName string, additionalAttributes AdditionalUserAttributesInterface) error {
+	res := s.Client.Database(s.Database).Collection(s.Collection).FindOneAndUpdate(
+		context.Background(),
+		bson.D{{Key: "userName", Value: userName}},
+		bson.D{{Key: "$set", Value: bson.D{
+			{Key: "additionalAttributes", Value: additionalAttributes},
+		}}})
+
+	return res.Err()
 }
