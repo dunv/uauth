@@ -15,7 +15,7 @@ var listUsersHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Requ
 	user := r.Context().Value(CtxKeyUser).(User)
 
 	if !user.CheckPermission(CanReadUsers) {
-		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanReadUsers), nil)
+		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanReadUsers))
 		return
 	}
 
@@ -25,7 +25,7 @@ var listUsersHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Requ
 	usersFromDb, err := userService.List()
 
 	if err != nil {
-		uhttp.RenderError(w, r, err, nil)
+		uhttp.RenderError(w, r, err)
 		return
 	}
 

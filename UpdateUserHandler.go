@@ -19,7 +19,7 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	err := json.NewDecoder(r.Body).Decode(&userFromRequest)
 	defer r.Body.Close()
 	if err != nil {
-		uhttp.RenderError(w, r, err, nil)
+		uhttp.RenderError(w, r, err)
 		return
 	}
 
@@ -29,19 +29,19 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	// Load user to check if it exists!
 
 	if user.ID == nil {
-		uhttp.RenderError(w, r, fmt.Errorf("UserID is not set"), nil)
+		uhttp.RenderError(w, r, fmt.Errorf("UserID is not set"))
 		return
 	}
 
 	userFromDb, err := service.Get(*userFromRequest.ID)
 	if err != nil {
-		uhttp.RenderError(w, r, err, nil)
+		uhttp.RenderError(w, r, err)
 		return
 	}
 
 	// Check permission if not modifying "own user"
 	if user.ID != userFromDb.ID && !user.CheckPermission(CanUpdateUsers) {
-		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanUpdateUsers), nil)
+		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanUpdateUsers))
 		return
 	}
 
@@ -55,7 +55,7 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 		roleService := NewRoleService(db)
 		allRoles, err := roleService.List()
 		if err != nil {
-			uhttp.RenderError(w, r, err, nil)
+			uhttp.RenderError(w, r, err)
 			return
 		}
 		verifiedRoles := []string{}
@@ -68,7 +68,7 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 		}
 
 		if len(verifiedRoles) != len(*userFromRequest.Roles) {
-			uhttp.RenderError(w, r, fmt.Errorf("Not all desired roles for the new user are valid"), nil)
+			uhttp.RenderError(w, r, fmt.Errorf("Not all desired roles for the new user are valid"))
 			return
 		}
 	}
@@ -78,7 +78,7 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 		hashedPassword, _ = HashPassword(*userFromRequest.Password)
 		userFromRequest.Password = &hashedPassword
 		if err != nil {
-			uhttp.RenderError(w, r, err, nil)
+			uhttp.RenderError(w, r, err)
 			return
 		}
 	}
@@ -88,11 +88,11 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 
 	err = service.Update(userFromRequest)
 	if err != nil {
-		uhttp.RenderError(w, r, err, nil)
+		uhttp.RenderError(w, r, err)
 		return
 	}
 
-	uhttp.RenderMessageWithStatusCode(w, r, 200, "Updated successfully", nil)
+	uhttp.RenderMessageWithStatusCode(w, r, 200, "Updated successfully")
 })
 
 // UpdateUserHandler <-

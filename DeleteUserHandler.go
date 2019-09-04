@@ -14,7 +14,7 @@ var deleteUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	user := r.Context().Value(CtxKeyUser).(User)
 
 	if !user.CheckPermission(CanDeleteUsers) {
-		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanDeleteUsers), nil)
+		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanDeleteUsers))
 		return
 	}
 
@@ -27,17 +27,17 @@ var deleteUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 
 	ID, err := primitive.ObjectIDFromHex(params["userId"].(string))
 	if err != nil {
-		uhttp.RenderError(w, r, err, nil)
+		uhttp.RenderError(w, r, err)
 		return
 	}
 
 	err = service.Delete(ID)
 	if err != nil {
-		uhttp.RenderError(w, r, err, nil)
+		uhttp.RenderError(w, r, err)
 		return
 	}
 
-	uhttp.RenderMessageWithStatusCode(w, r, 200, "Deleted successfully", nil)
+	uhttp.RenderMessageWithStatusCode(w, r, 200, "Deleted successfully")
 	return
 })
 

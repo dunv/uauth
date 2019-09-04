@@ -26,7 +26,7 @@ var RolesGetHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reque
 
 	// Check error
 	if err != nil {
-		uhttp.RenderError(w, r, err, nil)
+		uhttp.RenderError(w, r, err)
 		return
 	}
 

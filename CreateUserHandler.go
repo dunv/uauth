@@ -23,7 +23,7 @@ var createUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	user := r.Context().Value(CtxKeyUser).(User)
 
 	if !user.CheckPermission(CanCreateUsers) {
-		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanCreateUsers), nil)
+		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanCreateUsers))
 		return
 	}
 
@@ -32,7 +32,7 @@ var createUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	err := json.NewDecoder(r.Body).Decode(&userFromRequest)
 	defer r.Body.Close()
 	if err != nil {
-		uhttp.RenderError(w, r, err, nil)
+		uhttp.RenderError(w, r, err)
 		return
 	}
 
@@ -43,7 +43,7 @@ var createUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	roleService := NewRoleService(db)
 	allRoles, err := roleService.List()
 	if err != nil {
-		uhttp.RenderError(w, r, err, nil)
+		uhttp.RenderError(w, r, err)
 		return
 	}
 
@@ -57,13 +57,13 @@ var createUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	}
 
 	if len(verifiedRoles) != len(userFromRequest.Roles) {
-		uhttp.RenderError(w, r, fmt.Errorf("Not all desired roles for the new user are valid"), nil)
+		uhttp.RenderError(w, r, fmt.Errorf("Not all desired roles for the new user are valid"))
 		return
 	}
 
 	hashedPassword, _ := HashPassword(userFromRequest.Password)
 	if err != nil {
-		uhttp.RenderError(w, r, err, nil)
+		uhttp.RenderError(w, r, err)
 		return
 	}
 
@@ -77,11 +77,11 @@ var createUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	}
 	err = userService.CreateUser(&userToBeCreated)
 	if err != nil {
-		uhttp.RenderError(w, r, err, nil)
+		uhttp.RenderError(w, r, err)
 		return
 	}
 
-	uhttp.RenderMessageWithStatusCode(w, r, 200, "Created successfully", nil)
+	uhttp.RenderMessageWithStatusCode(w, r, 200, "Created successfully")
 })
 
 var CreateUserHandler = uhttp.Handler{

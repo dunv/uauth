@@ -13,6 +13,8 @@ github.com/dgrijalva/jwt-go v3.2.0+incompatible h1:7qlOGliEKZXTDg6OTjfoBKDXWrumC
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dunv/uhttp v1.0.15 h1:MluMDoBuIVKckIq027MZPqsRKKJxOcjTIrDM4RlSXLA=
 github.com/dunv/uhttp v1.0.15/go.mod h1:vi7NWNEIIApH8PUTL3Hn1TIuOaDPmb4b6aMUpuQIMWI=
+github.com/dunv/uhttp v1.0.18 h1:ykdOyhW5LISCZXdC+iou5ssRkKiAyiY9+G4aV24Sr+k=
+github.com/dunv/uhttp v1.0.18/go.mod h1:vi7NWNEIIApH8PUTL3Hn1TIuOaDPmb4b6aMUpuQIMWI=
 github.com/dunv/umongo v1.0.8/go.mod h1:GTE/PEH/OJF+EHzgrjwFI3OUSoyu0tJxHbBCg29pNng=
 github.com/go-kit/kit v0.8.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=
 github.com/go-logfmt/logfmt v0.3.0/go.mod h1:Qt1PoO58o5twSAckw1HlFXLmHsOX5/0LbT9GBnD5lWE=

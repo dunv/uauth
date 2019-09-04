@@ -29,7 +29,7 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 	err := json.NewDecoder(r.Body).Decode(&loginRequest)
 	defer r.Body.Close()
 	if err != nil {
-		uhttp.RenderError(w, r, err, nil)
+		uhttp.RenderError(w, r, err)
 		return
 	}
 
@@ -39,7 +39,7 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 
 	// Verify user with password
 	if err != nil || !(*userFromDb).CheckPassword(*loginRequest.User.Password) {
-		uhttp.RenderError(w, r, fmt.Errorf("No user with this name/password exists (%s)", err), nil)
+		uhttp.RenderError(w, r, fmt.Errorf("No user with this name/password exists (%s)", err))
 		return
 	}
 
@@ -49,7 +49,7 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 
 	// Check error
 	if err != nil {
-		uhttp.RenderError(w, r, err, nil)
+		uhttp.RenderError(w, r, err)
 		return
 	}
 
@@ -59,7 +59,7 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 	var userWithClaims = (*userFromDb).ToUserWithClaims()
 	err = userWithClaims.UnmarshalAdditionalAttributes()
 	if err != nil {
-		uhttp.RenderError(w, r, fmt.Errorf("Could not unmarshal additonalAttributes (%s)", err), nil)
+		uhttp.RenderError(w, r, fmt.Errorf("Could not unmarshal additonalAttributes (%s)", err))
 		return
 	}
 	userWithClaims.IssuedAt = int64(time.Now().Unix())
@@ -71,7 +71,7 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 	bCryptSecret := r.Context().Value(uhttp.CtxKeyBCryptSecret).(string)
 	signedToken, err := token.SignedString([]byte(bCryptSecret))
 	if err != nil {
-		uhttp.RenderError(w, r, err, nil)
+		uhttp.RenderError(w, r, err)
 	}
 
 	// Add rolesDetails to user-model

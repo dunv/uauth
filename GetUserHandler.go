@@ -17,7 +17,7 @@ var getUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reques
 	user := r.Context().Value(CtxKeyUser).(User)
 
 	if !user.CheckPermission(CanReadUsers) {
-		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanReadUsers), nil)
+		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanReadUsers))
 		return
 	}
 
@@ -30,13 +30,13 @@ var getUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reques
 
 	ID, err := primitive.ObjectIDFromHex(params["userId"].(string))
 	if err != nil {
-		uhttp.RenderError(w, r, err, nil)
+		uhttp.RenderError(w, r, err)
 		return
 	}
 	userFromDb, err := service.Get(ID)
 
 	if err != nil {
-		uhttp.RenderError(w, r, err, nil)
+		uhttp.RenderError(w, r, err)
 		return
 	}
 
