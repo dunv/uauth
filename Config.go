@@ -6,3 +6,11 @@ var userDB string
 func SetDatabase(_userDB string) {
 	userDB = _userDB
 }
+
+const defaultTokenIssuer string = "uauth"
+
+var tokenIssuer *string
+
+func SetTokenIssuer(_tokenIssuer string) {
+	tokenIssuer = &_tokenIssuer
+}

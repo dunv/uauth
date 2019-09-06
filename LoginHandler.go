@@ -18,7 +18,7 @@ type loginRequest struct {
 
 type loginResponse struct {
 	User    User           `json:"user"`
-	JWTUser UserWithClaims `json:"jwtUser"`
+	JWTUser UserWithClaims `json:"DO_NOT_USE_jwtUser"`
 	JWT     string         `json:"jwt"`
 }
 
@@ -63,7 +63,11 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	userWithClaims.IssuedAt = int64(time.Now().Unix())
-	userWithClaims.Issuer = "brauen_login"
+	usedIssuer := defaultTokenIssuer
+	if tokenIssuer != nil {
+		usedIssuer = *tokenIssuer
+	}
+	userWithClaims.Issuer = usedIssuer
 	userWithClaims.ExpiresAt = int64(time.Now().Unix() + 604800)
 	userWithClaims.Permissions = &permissions
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, userWithClaims)
