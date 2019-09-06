@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -22,7 +23,12 @@ func Auth(bCryptSecret string) func(next http.HandlerFunc) http.HandlerFunc {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			// next.ServeHTTP(w, r)
-			token, err := jwt.ParseWithClaims(r.Header.Get("Authorization"), &UserWithClaimsRaw{}, func(token *jwt.Token) (interface{}, error) {
+			wholeHeader := r.Header.Get("Authorization")
+			var parsableToken string
+			if strings.Contains(wholeHeader, "Bearer ") {
+				parsableToken = strings.Replace(wholeHeader, "Bearer ", "", 1)
+			}
+			token, err := jwt.ParseWithClaims(parsableToken, &UserWithClaimsRaw{}, func(token *jwt.Token) (interface{}, error) {
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 					return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 				}
