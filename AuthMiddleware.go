@@ -16,7 +16,7 @@ func Auth(bCryptSecret string) func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			user, err := helpers.GetUserFromRequestHeaders(r, bCryptSecret)
 			if err != nil {
-				uhttp.RenderError(w, r, fmt.Errorf("Unauthorized, please make sure you are sending a valid JWT token in the \"Authorization\" header."))
+				uhttp.RenderError(w, r, fmt.Errorf("Unauthorized"))
 				return
 			}
 			ctx := context.WithValue(r.Context(), config.CtxKeyUser, *user)

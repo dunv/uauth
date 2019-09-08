@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -13,7 +12,6 @@ import (
 	"github.com/dunv/uauth/permissions"
 	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
-	"github.com/dunv/ulog"
 )
 
 var getUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -45,11 +43,7 @@ var getUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reques
 	}
 
 	userFromDb.Password = nil
-
-	err = json.NewEncoder(w).Encode(*userFromDb)
-	if err != nil {
-		ulog.Errorf("Error rendering response (%s)", err)
-	}
+	uhttp.Render(w, r, *userFromDb)
 })
 
 var GetUserHandler = uhttp.Handler{

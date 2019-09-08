@@ -10,7 +10,6 @@ import (
 	"github.com/dunv/uauth/permissions"
 	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
-	"github.com/dunv/ulog"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -40,10 +39,7 @@ var listUsersHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Requ
 		user.Password = nil
 	}
 
-	err = json.NewEncoder(w).Encode(*usersFromDb)
-	if err != nil {
-		ulog.Errorf("Error rendering response (%s)", err)
-	}
+	uhttp.Render(w, r, json.NewEncoder(w).Encode(*usersFromDb))
 })
 
 var ListUsersHandler = uhttp.Handler{

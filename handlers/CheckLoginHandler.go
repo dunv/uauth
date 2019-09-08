@@ -78,11 +78,9 @@ var checkLoginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 
 	checkLoginResponse.Valid = checkLoginResponse.AllOk()
 	if !checkLoginResponse.Valid {
-		w.WriteHeader(http.StatusUnauthorized)
-	}
-	err = json.NewEncoder(w).Encode(checkLoginResponse)
-	if err != nil {
-		ulog.Errorf("Error rendering response (%s)", err)
+		uhttp.RenderWithStatusCode(w, r, http.StatusUnauthorized, checkLoginResponse)
+	} else {
+		uhttp.Render(w, r, checkLoginResponse)
 	}
 })
 

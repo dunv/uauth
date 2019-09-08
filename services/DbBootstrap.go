@@ -38,10 +38,7 @@ func CreateInitialRolesIfNotExist(s *mongo.Client) {
 		}}
 		for _, role := range roles {
 			ulog.Infof("role: %s", role.Name)
-			err = roleService.CreateRole(&role)
-			if err != nil {
-				ulog.Errorf("Error creating role (%s)", err)
-			}
+			ulog.LogIfError(roleService.CreateRole(&role))
 		}
 		ulog.Info("Done.")
 	}
@@ -71,10 +68,7 @@ func CreateInitialUsersIfNotExist(s *mongo.Client) {
 			hashedPassword, _ := user.HashPassword(pw)
 			user.Password = &hashedPassword
 			ulog.Infof("user: %s, pw: %s", user.UserName, pw)
-			err = userService.CreateUser(&user)
-			if err != nil {
-				ulog.Errorf("Error creating user (%s)", err)
-			}
+			ulog.LogIfError(userService.CreateUser(&user))
 		}
 		ulog.Infof("Done.")
 	}

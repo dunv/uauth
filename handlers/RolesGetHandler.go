@@ -8,7 +8,6 @@ import (
 	"github.com/dunv/uauth/models"
 	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
-	"github.com/dunv/ulog"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -34,13 +33,10 @@ var rolesGetHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Encode response
-	err = json.NewEncoder(w).Encode(rolesGetResponse{
+	uhttp.Render(w, r, json.NewEncoder(w).Encode(rolesGetResponse{
 		Success: true,
 		Roles:   roles,
-	})
-	if err != nil {
-		ulog.Errorf("Error rendering response (%s)", err)
-	}
+	}))
 })
 
 var RolesGetHandler = uhttp.Handler{

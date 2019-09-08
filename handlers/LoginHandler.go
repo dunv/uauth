@@ -12,7 +12,6 @@ import (
 	"github.com/dunv/uauth/models"
 	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
-	"github.com/dunv/ulog"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -86,14 +85,11 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 	(*userFromDb).Password = nil
 
 	// Render response
-	err = json.NewEncoder(w).Encode(loginResponse{
+	uhttp.Render(w, r, json.NewEncoder(w).Encode(loginResponse{
 		User:    *userFromDb,
 		JWTUser: userWithClaims,
 		JWT:     signedToken,
-	})
-	if err != nil {
-		ulog.Errorf("Error rendering response (%s)", err)
-	}
+	}))
 })
 
 // LoginHandler handler for getting JSON web token
