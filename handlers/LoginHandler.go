@@ -1,4 +1,4 @@
-package uauth
+package handlers
 
 import (
 	"encoding/json"
@@ -7,19 +7,23 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/dunv/uauth"
+	"github.com/dunv/uauth/config"
+	"github.com/dunv/uauth/models"
+	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
-	log "github.com/sirupsen/logrus"
+	"github.com/dunv/ulog"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type loginRequest struct {
-	User User `json:"user"`
+	User models.User `json:"user"`
 }
 
 type loginResponse struct {
-	User    User           `json:"user"`
-	JWTUser UserWithClaims `json:"DO_NOT_USE_jwtUser"`
-	JWT     string         `json:"jwt"`
+	User    models.User           `json:"user"`
+	JWTUser models.UserWithClaims `json:"DO_NOT_USE_jwtUser"`
+	JWT     string                `json:"jwt"`
 }
 
 var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -33,8 +37,8 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	db := r.Context().Value(UserDB).(*mongo.Client)
-	userService := NewUserService(db)
+	db := r.Context().Value(config.CtxKeyUserDB).(*mongo.Client)
+	userService := services.NewUserService(db)
 	userFromDb, err := userService.GetByUserName(loginRequest.User.UserName)
 
 	// Verify user with password
@@ -44,7 +48,7 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Get Roles
-	rolesService := NewRoleService(db)
+	rolesService := services.NewRoleService(db)
 	roles, err := rolesService.GetMultipleByName(*userFromDb.Roles)
 
 	// Check error
@@ -53,7 +57,7 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	permissions := MergeToPermissions(*roles)
+	permissions := models.MergeToPermissions(*roles)
 
 	// Create jwt-token with the username set
 	var userWithClaims = (*userFromDb).ToUserWithClaims()
@@ -63,10 +67,7 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	userWithClaims.IssuedAt = int64(time.Now().Unix())
-	usedIssuer := defaultTokenIssuer
-	if tokenIssuer != nil {
-		usedIssuer = *tokenIssuer
-	}
+	usedIssuer := uauth.Config().TokenIssuer
 	userWithClaims.Issuer = usedIssuer
 	userWithClaims.ExpiresAt = int64(time.Now().Unix() + 604800)
 	userWithClaims.Permissions = &permissions
@@ -91,12 +92,12 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 		JWT:     signedToken,
 	})
 	if err != nil {
-		log.Errorf("Error rendering response (%s)", err)
+		ulog.Errorf("Error rendering response (%s)", err)
 	}
 })
 
 // LoginHandler handler for getting JSON web token
 var LoginHandler = uhttp.Handler{
 	PostHandler: loginHandler,
-	DbRequired:  []uhttp.ContextKey{UserDB},
+	DbRequired:  []uhttp.ContextKey{config.CtxKeyUserDB},
 }

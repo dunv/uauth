@@ -1,27 +1,31 @@
-package uauth
+package handlers
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
 
+	"github.com/dunv/uauth/config"
+	"github.com/dunv/uauth/models"
+	"github.com/dunv/uauth/permissions"
+	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
-	log "github.com/sirupsen/logrus"
+	"github.com/dunv/ulog"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 var listUsersHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	// Get User
-	user := r.Context().Value(CtxKeyUser).(User)
+	user := r.Context().Value(config.CtxKeyUser).(models.User)
 
-	if !user.CheckPermission(CanReadUsers) {
-		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanReadUsers))
+	if !user.CheckPermission(permissions.CanReadUsers) {
+		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", permissions.CanReadUsers))
 		return
 	}
 
 	// Get DB
-	db := r.Context().Value(UserDB).(*mongo.Client)
-	userService := NewUserService(db)
+	db := r.Context().Value(config.CtxKeyUserDB).(*mongo.Client)
+	userService := services.NewUserService(db)
 	usersFromDb, err := userService.List()
 
 	if err != nil {
@@ -38,13 +42,12 @@ var listUsersHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Requ
 
 	err = json.NewEncoder(w).Encode(*usersFromDb)
 	if err != nil {
-		log.Errorf("Error rendering response (%s)", err)
+		ulog.Errorf("Error rendering response (%s)", err)
 	}
 })
 
-// ListUsersHandler <-
 var ListUsersHandler = uhttp.Handler{
 	GetHandler:   listUsersHandler,
-	DbRequired:   []uhttp.ContextKey{UserDB},
+	DbRequired:   []uhttp.ContextKey{config.CtxKeyUserDB},
 	AuthRequired: true,
 }

@@ -1,22 +1,23 @@
-package uauth
+package helpers 
 
 import (
 	"net/http"
+
+	"github.com/dunv/uauth/config"
+	"github.com/dunv/uauth/models"
 )
 
-// UserResolver <-
 func UserResolver(r *http.Request) string {
-	test := r.Context().Value(CtxKeyUser)
+	test := r.Context().Value(config.CtxKeyUser)
 	if test == nil {
 		return ""
 	}
-	user := test.(User)
+	user := test.(models.User)
 	return user.UserName
 }
 
-// AuthBasicUserResolver <-
 func AuthBasicUserResolver(r *http.Request) string {
-	test := r.Context().Value(CtxKeyUser)
+	test := r.Context().Value(config.CtxKeyUser)
 	if test == nil {
 		return ""
 	}

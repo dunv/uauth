@@ -1,10 +1,16 @@
-package uauth
+package handlers
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
 
+	"github.com/dunv/uauth"
+	"github.com/dunv/uauth/config"
+	"github.com/dunv/uauth/helpers"
+	"github.com/dunv/uauth/models"
+	"github.com/dunv/uauth/permissions"
+	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -20,10 +26,10 @@ type createUserModel struct {
 
 var createUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	// Get User
-	user := r.Context().Value(CtxKeyUser).(User)
+	user := r.Context().Value(config.CtxKeyUser).(models.User)
 
-	if !user.CheckPermission(CanCreateUsers) {
-		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanCreateUsers))
+	if !user.CheckPermission(permissions.CanCreateUsers) {
+		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", permissions.CanCreateUsers))
 		return
 	}
 
@@ -37,10 +43,10 @@ var createUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	}
 
 	// Get DB
-	db := r.Context().Value(UserDB).(*mongo.Client)
+	db := r.Context().Value(uauth.Config().UserDbName).(*mongo.Client)
 
 	// Verify all roles exist
-	roleService := NewRoleService(db)
+	roleService := services.NewRoleService(db)
 	allRoles, err := roleService.List()
 	if err != nil {
 		uhttp.RenderError(w, r, err)
@@ -61,14 +67,14 @@ var createUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	hashedPassword, _ := HashPassword(userFromRequest.Password)
+	hashedPassword, _ := helpers.HashPassword(userFromRequest.Password)
 	if err != nil {
 		uhttp.RenderError(w, r, err)
 		return
 	}
 
-	userService := NewUserService(db)
-	userToBeCreated := User{
+	userService := services.NewUserService(db)
+	userToBeCreated := models.User{
 		UserName:  userFromRequest.UserName,
 		FirstName: userFromRequest.FirstName,
 		LastName:  userFromRequest.LastName,
@@ -86,6 +92,6 @@ var createUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 
 var CreateUserHandler = uhttp.Handler{
 	PostHandler:  createUserHandler,
-	DbRequired:   []uhttp.ContextKey{UserDB},
+	DbRequired:   []uhttp.ContextKey{config.CtxKeyUserDB},
 	AuthRequired: true,
 }

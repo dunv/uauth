@@ -7,6 +7,7 @@ require (
 	github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dunv/uhttp v1.0.19
+	github.com/dunv/ulog v0.0.7
 	github.com/dunv/umongo v1.0.8
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/prometheus/common v0.6.0

@@ -1,4 +1,4 @@
-package uauth
+package handlers
 
 import (
 	"encoding/json"
@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/dunv/uauth/models"
 	"github.com/dunv/uhttp"
+	"github.com/dunv/ulog"
 )
 
 type checkLoginRequest struct {
@@ -17,12 +17,12 @@ type checkLoginRequest struct {
 }
 
 type checkLoginResponse struct {
-	User                       User `json:"user"`
-	SignatureValid             bool `json:"signatureValid"`
-	ContainsRequiredAttributes bool `json:"containsRequiredAttributes"`
-	IssuedBeforeNow            bool `json:"issuedBeforeNow,omitempty"`
-	ExpiryAfterNow             bool `json:"expiryAfterNow,omitempty"`
-	Valid                      bool `json:"valid,omitempty"`
+	User                       models.User `json:"user"`
+	SignatureValid             bool        `json:"signatureValid"`
+	ContainsRequiredAttributes bool        `json:"containsRequiredAttributes"`
+	IssuedBeforeNow            bool        `json:"issuedBeforeNow,omitempty"`
+	ExpiryAfterNow             bool        `json:"expiryAfterNow,omitempty"`
+	Valid                      bool        `json:"valid,omitempty"`
 }
 
 func (r checkLoginResponse) AllOk() bool {
@@ -43,10 +43,10 @@ var checkLoginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 
 	// Parse token and check signature
 	bCryptSecret := r.Context().Value(uhttp.CtxKeyBCryptSecret).(string)
-	token, err := jwt.ParseWithClaims(checkLoginRequest.Token, &UserWithClaimsRaw{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(checkLoginRequest.Token, &models.UserWithClaimsRaw{}, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			log.Println("Returning wrong signing method")
+			ulog.Infof("Returning wrong signing method")
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(bCryptSecret), nil
@@ -65,10 +65,10 @@ var checkLoginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	}
 
 	// Extract claims and use validity check
-	if userWithClaims, ok := token.Claims.(*UserWithClaimsRaw); ok {
+	if userWithClaims, ok := token.Claims.(*models.UserWithClaimsRaw); ok {
 		err = userWithClaims.UnmarshalAdditionalAttributes()
 		if err != nil {
-			log.Infof("Could not unmarshal (%s)", err)
+			ulog.Infof("Could not unmarshal (%s)", err)
 		}
 		checkLoginResponse.User = userWithClaims.ToUser()
 		checkLoginResponse.ContainsRequiredAttributes = true
@@ -82,7 +82,7 @@ var checkLoginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	}
 	err = json.NewEncoder(w).Encode(checkLoginResponse)
 	if err != nil {
-		log.Errorf("Error rendering response (%s)", err)
+		ulog.Errorf("Error rendering response (%s)", err)
 	}
 })
 

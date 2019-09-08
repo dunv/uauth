@@ -1,8 +1,10 @@
-package uauth
+package services
 
 import (
 	"context"
 
+	"github.com/dunv/uauth"
+	"github.com/dunv/uauth/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -18,13 +20,13 @@ type RoleService struct {
 func NewRoleService(db *mongo.Client) *RoleService {
 	return &RoleService{
 		Client:     db,
-		Database:   userDB,
+		Database:   uauth.Config().UserDbName,
 		Collection: "roles",
 	}
 }
 
 // GetMultipleByName from mongoDB
-func (s *RoleService) GetMultipleByName(roleNames []string) (*[]Role, error) {
+func (s *RoleService) GetMultipleByName(roleNames []string) (*[]models.Role, error) {
 	queryParts := []bson.M{}
 	for _, roleName := range roleNames {
 		queryParts = append(queryParts, bson.M{"name": roleName})
@@ -33,24 +35,24 @@ func (s *RoleService) GetMultipleByName(roleNames []string) (*[]Role, error) {
 }
 
 // GetAllRoles from mongoDB
-func (s *RoleService) List() (*[]Role, error) {
+func (s *RoleService) List() (*[]models.Role, error) {
 	return cursorToRoles(s.Client.Database(s.Database).Collection(s.Collection).Find(context.Background(), bson.D{}))
 }
 
 // CreateRole creates a user in the db
-func (s *RoleService) CreateRole(role *Role) error {
+func (s *RoleService) CreateRole(role *models.Role) error {
 	_, err := s.Client.Database(s.Database).Collection(s.Collection).InsertOne(context.Background(), role)
 	return err
 }
 
-func cursorToRoles(cur *mongo.Cursor, err error) (*[]Role, error) {
+func cursorToRoles(cur *mongo.Cursor, err error) (*[]models.Role, error) {
 	if err != nil {
 		return nil, err
 	}
-	var results []Role
+	var results []models.Role
 	defer cur.Close(context.Background())
 	for cur.Next(context.Background()) {
-		var result Role
+		var result models.Role
 		err := cur.Decode(&result)
 		if err != nil {
 			return nil, err

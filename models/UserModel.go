@@ -1,8 +1,10 @@
-package uauth
+package models
 
 import (
 	"fmt"
 
+	"github.com/dunv/uauth/interfaces"
+	"github.com/dunv/uauth/permissions"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
@@ -10,15 +12,15 @@ import (
 
 // User user
 type User struct {
-	ID                      *primitive.ObjectID               `bson:"_id" json:"id,omitempty"`
-	UserName                string                            `bson:"userName" json:"userName"`
-	FirstName               string                            `bson:"firstName,omitempty" json:"firstName,omitempty"`
-	LastName                string                            `bson:"lastName,omitempty" json:"lastName,omitempty"`
-	Password                *string                           `bson:"password,omitempty" json:"password,omitempty"`
-	Permissions             *[]Permission                     `bson:"-" json:"permissions,omitempty"`
-	AdditionalAttributesRaw bson.Raw                          `bson:"additionalAttributes,omitempty" json:"-"`
-	AdditionalAttributes    AdditionalUserAttributesInterface `bson:"-"  json:"additionalAttributes,omitempty"`
-	Roles                   *[]string                         `bson:"roles" json:"roles,omitempty"`
+	ID                      *primitive.ObjectID                          `bson:"_id" json:"id,omitempty"`
+	UserName                string                                       `bson:"userName" json:"userName"`
+	FirstName               string                                       `bson:"firstName,omitempty" json:"firstName,omitempty"`
+	LastName                string                                       `bson:"lastName,omitempty" json:"lastName,omitempty"`
+	Password                *string                                      `bson:"password,omitempty" json:"password,omitempty"`
+	Permissions             *[]permissions.Permission                    `bson:"-" json:"permissions,omitempty"`
+	AdditionalAttributesRaw bson.Raw                                     `bson:"additionalAttributes,omitempty" json:"-"`
+	AdditionalAttributes    interfaces.AdditionalUserAttributesInterface `bson:"-"  json:"additionalAttributes,omitempty"`
+	Roles                   *[]string                                    `bson:"roles" json:"roles,omitempty"`
 }
 
 func (u *User) String() string {
@@ -55,7 +57,7 @@ func (u *User) CheckPassword(plainTextPassword string) bool {
 }
 
 // CheckPermission check if user has a permission
-func (u *User) CheckPermission(permission Permission) bool {
+func (u *User) CheckPermission(permission permissions.Permission) bool {
 	for _, userPerm := range *u.Permissions {
 		if userPerm == permission {
 			return true
@@ -65,15 +67,15 @@ func (u *User) CheckPermission(permission Permission) bool {
 }
 
 func (u *User) UnmarshalAdditionalAttributes() error {
-	if additionalAttributesModel != nil {
-		additionalAttributes := additionalAttributesModel.CloneEmpty()
+	if AdditionalAttributesModel != nil {
+		additionalAttributes := AdditionalAttributesModel.CloneEmpty()
 		if u.AdditionalAttributesRaw != nil {
 			err := bson.Unmarshal(u.AdditionalAttributesRaw, additionalAttributes)
 			if err != nil {
 				return fmt.Errorf("could not unmarshal %s", err)
 			}
 			u.AdditionalAttributes = additionalAttributes
-		} else if additionalAttributesModel != nil {
+		} else if AdditionalAttributesModel != nil {
 			u.AdditionalAttributes = additionalAttributes
 		}
 	}

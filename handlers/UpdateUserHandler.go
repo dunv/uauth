@@ -1,4 +1,4 @@
-package uauth
+package handlers
 
 import (
 	"encoding/json"
@@ -7,15 +7,20 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 
+	"github.com/dunv/uauth/config"
+	"github.com/dunv/uauth/helpers"
+	"github.com/dunv/uauth/models"
+	"github.com/dunv/uauth/permissions"
+	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
 )
 
 var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	// Get User
-	user := r.Context().Value(CtxKeyUser).(User)
+	user := r.Context().Value(config.CtxKeyUser).(models.User)
 
 	// Parse requestedUserModel
-	var userFromRequest User
+	var userFromRequest models.User
 	err := json.NewDecoder(r.Body).Decode(&userFromRequest)
 	defer r.Body.Close()
 	if err != nil {
@@ -24,8 +29,8 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	}
 
 	// Get DB
-	db := r.Context().Value(UserDB).(*mongo.Client)
-	service := NewUserService(db)
+	db := r.Context().Value(config.CtxKeyUserDB).(*mongo.Client)
+	service := services.NewUserService(db)
 	// Load user to check if it exists!
 
 	if user.ID == nil {
@@ -40,19 +45,19 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	}
 
 	// Check permission if not modifying "own user"
-	if user.ID != userFromDb.ID && !user.CheckPermission(CanUpdateUsers) {
-		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", CanUpdateUsers))
+	if user.ID != userFromDb.ID && !user.CheckPermission(permissions.CanUpdateUsers) {
+		uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", permissions.CanUpdateUsers))
 		return
 	}
 
 	// Delete roles if permissions not adequate
-	if !user.CheckPermission(CanUpdateUsers) {
+	if !user.CheckPermission(permissions.CanUpdateUsers) {
 		userFromRequest.Roles = nil
 	}
 
 	// Verify all roles exist
 	if userFromRequest.Roles != nil {
-		roleService := NewRoleService(db)
+		roleService := services.NewRoleService(db)
 		allRoles, err := roleService.List()
 		if err != nil {
 			uhttp.RenderError(w, r, err)
@@ -75,7 +80,7 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 
 	var hashedPassword string
 	if userFromRequest.Password != nil {
-		hashedPassword, _ = HashPassword(*userFromRequest.Password)
+		hashedPassword, _ = helpers.HashPassword(*userFromRequest.Password)
 		userFromRequest.Password = &hashedPassword
 		if err != nil {
 			uhttp.RenderError(w, r, err)
@@ -98,6 +103,6 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 // UpdateUserHandler <-
 var UpdateUserHandler = uhttp.Handler{
 	PostHandler:  updateUserHandler,
-	DbRequired:   []uhttp.ContextKey{UserDB},
+	DbRequired:   []uhttp.ContextKey{config.CtxKeyUserDB},
 	AuthRequired: true,
 }

@@ -7,7 +7,8 @@ import (
 	"fmt"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/dunv/uauth/config"
+	"github.com/dunv/ulog"
 )
 
 func AuthBasic(wantedUsername string, wantedMd5Password string) func(next http.HandlerFunc) http.HandlerFunc {
@@ -25,12 +26,12 @@ func AuthBasic(wantedUsername string, wantedMd5Password string) func(next http.H
 				w.WriteHeader(401)
 				_, err := w.Write(js)
 				if err != nil {
-					log.Errorf("Error rendering response (%s)", err)
+					ulog.Errorf("Error rendering response (%s)", err)
 				}
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), CtxKeyUser, user)
+			ctx := context.WithValue(r.Context(), config.CtxKeyUser, user)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		}
 	}
