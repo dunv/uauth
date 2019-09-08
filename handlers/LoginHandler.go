@@ -85,11 +85,11 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 	(*userFromDb).Password = nil
 
 	// Render response
-	uhttp.Render(w, r, json.NewEncoder(w).Encode(loginResponse{
+	uhttp.Render(w, r, loginResponse{
 		User:    *userFromDb,
 		JWTUser: userWithClaims,
 		JWT:     signedToken,
-	}))
+	})
 })
 
 // LoginHandler handler for getting JSON web token

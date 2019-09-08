@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -32,7 +31,7 @@ var listRolesHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	uhttp.Render(w, r, json.NewEncoder(w).Encode(*rolesFromDb))
+	uhttp.Render(w, r, *rolesFromDb)
 })
 
 var ListRolesHandler = uhttp.Handler{

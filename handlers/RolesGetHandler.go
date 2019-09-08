@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/dunv/uauth/config"
@@ -33,10 +32,10 @@ var rolesGetHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Encode response
-	uhttp.Render(w, r, json.NewEncoder(w).Encode(rolesGetResponse{
+	uhttp.Render(w, r, rolesGetResponse{
 		Success: true,
 		Roles:   roles,
-	}))
+	})
 })
 
 var RolesGetHandler = uhttp.Handler{

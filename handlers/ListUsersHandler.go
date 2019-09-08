@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -39,7 +38,7 @@ var listUsersHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Requ
 		user.Password = nil
 	}
 
-	uhttp.Render(w, r, json.NewEncoder(w).Encode(*usersFromDb))
+	uhttp.Render(w, r, *usersFromDb)
 })
 
 var ListUsersHandler = uhttp.Handler{
