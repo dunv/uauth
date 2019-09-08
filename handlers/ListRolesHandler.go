@@ -9,6 +9,7 @@ import (
 	"github.com/dunv/uauth/permissions"
 	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
+	uhttpModels "github.com/dunv/uhttp/models"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -34,8 +35,8 @@ var listRolesHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Requ
 	uhttp.Render(w, r, *rolesFromDb)
 })
 
-var ListRolesHandler = uhttp.Handler{
-	GetHandler:   listRolesHandler,
-	DbRequired:   []uhttp.ContextKey{config.CtxKeyUserDB},
-	AuthRequired: true,
+var ListRolesHandler = uhttpModels.Handler{
+	GetHandler:                listRolesHandler,
+	AdditionalContextRequired: []uhttpModels.ContextKey{config.CtxKeyUserDB},
+	AuthRequired:              true,
 }

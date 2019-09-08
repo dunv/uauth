@@ -7,6 +7,7 @@ import (
 	"github.com/dunv/uauth/models"
 	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
+	uhttpModels "github.com/dunv/uhttp/models"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -16,7 +17,7 @@ type rolesGetResponse struct {
 }
 
 // RolesGetHandler for getting days for the logged in user
-var rolesGetHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+var getRolesHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	// Get User
 	user := r.Context().Value(config.CtxKeyUser).(models.User)
 
@@ -38,8 +39,8 @@ var rolesGetHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reque
 	})
 })
 
-var RolesGetHandler = uhttp.Handler{
-	GetHandler:   rolesGetHandler,
-	DbRequired:   []uhttp.ContextKey{config.CtxKeyUserDB},
-	AuthRequired: true,
+var GetRolesHandler = uhttpModels.Handler{
+	GetHandler:                getRolesHandler,
+	AdditionalContextRequired: []uhttpModels.ContextKey{config.CtxKeyUserDB},
+	AuthRequired:              true,
 }

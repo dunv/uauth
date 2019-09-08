@@ -9,6 +9,8 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/dunv/uauth/models"
 	"github.com/dunv/uhttp"
+	uhttpContextKeys "github.com/dunv/uhttp/contextkeys"
+	uhttpModels "github.com/dunv/uhttp/models"
 	"github.com/dunv/ulog"
 )
 
@@ -42,7 +44,7 @@ var checkLoginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	checkLoginResponse := checkLoginResponse{}
 
 	// Parse token and check signature
-	bCryptSecret := r.Context().Value(uhttp.CtxKeyBCryptSecret).(string)
+	bCryptSecret := r.Context().Value(uhttpContextKeys.CtxKeyBCryptSecret).(string)
 	token, err := jwt.ParseWithClaims(checkLoginRequest.Token, &models.UserWithClaimsRaw{}, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -85,6 +87,6 @@ var checkLoginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 })
 
 // CheckLoginHandler for testing a user's webtoken
-var CheckLoginHandler = uhttp.Handler{
+var CheckLoginHandler = uhttpModels.Handler{
 	PostHandler: checkLoginHandler,
 }

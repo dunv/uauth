@@ -13,6 +13,7 @@ import (
 	"github.com/dunv/uauth/permissions"
 	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
+	uhttpModels "github.com/dunv/uhttp/models"
 )
 
 var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -100,9 +101,8 @@ var updateUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	uhttp.RenderMessageWithStatusCode(w, r, 200, "Updated successfully")
 })
 
-// UpdateUserHandler <-
-var UpdateUserHandler = uhttp.Handler{
-	PostHandler:  updateUserHandler,
-	DbRequired:   []uhttp.ContextKey{config.CtxKeyUserDB},
-	AuthRequired: true,
+var UpdateUserHandler = uhttpModels.Handler{
+	PostHandler:               updateUserHandler,
+	AdditionalContextRequired: []uhttpModels.ContextKey{config.CtxKeyUserDB},
+	AuthRequired:              true,
 }
