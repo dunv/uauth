@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dunv/uauth"
 	"github.com/dunv/uauth/config"
 	"github.com/dunv/uauth/helpers"
 	"github.com/dunv/uauth/models"
@@ -44,7 +43,7 @@ var createUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	}
 
 	// Get DB
-	db := r.Context().Value(uauth.Config().UserDbName).(*mongo.Client)
+	db := r.Context().Value(config.CtxKeyUserDB).(*mongo.Client)
 
 	// Verify all roles exist
 	roleService := services.NewRoleService(db)
