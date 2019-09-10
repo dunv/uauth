@@ -11,6 +11,6 @@ require (
 	github.com/dunv/umongo v1.0.8
 	github.com/sirupsen/logrus v1.4.2
 	github.com/tidwall/pretty v1.0.0 // indirect
-	go.mongodb.org/mongo-driver v1.1.0
-	golang.org/x/crypto v0.0.0-20190829043050-9756ffdc2472
+	go.mongodb.org/mongo-driver v1.1.1
+	golang.org/x/crypto v0.0.0-20190907121410-71b5226ff739
 )
