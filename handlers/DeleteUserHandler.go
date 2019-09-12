@@ -9,8 +9,8 @@ import (
 	"github.com/dunv/uauth/permissions"
 	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
+	contextKeys "github.com/dunv/uhttp/contextkeys"
 	uhttpModels "github.com/dunv/uhttp/models"
-	uhttpContextKeys "github.com/dunv/uhttp/contextkeys"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -25,7 +25,7 @@ var deleteUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	}
 
 	// Get Params
-	params := r.Context().Value(uhttpContextKeys.CtxKeyParams).(map[string]interface{})
+	params := r.Context().Value(contextKeys.CtxKeyParams).(map[string]interface{})
 
 	// Get DB
 	db := r.Context().Value(config.CtxKeyUserDB).(*mongo.Client)
@@ -49,7 +49,7 @@ var deleteUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 
 var DeleteUserHandler = uhttpModels.Handler{
 	DeleteHandler:             deleteUserHandler,
-	AdditionalContextRequired: []uhttpModels.ContextKey{config.CtxKeyUserDB},
+	AdditionalContextRequired: []contextKeys.ContextKey{config.CtxKeyUserDB},
 	AuthRequired:              true,
 	RequiredParams: uhttpModels.Params{ParamMap: map[string]uhttpModels.ParamRequirement{
 		"userId": uhttpModels.ParamRequirement{AllValues: true},

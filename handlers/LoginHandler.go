@@ -12,7 +12,7 @@ import (
 	"github.com/dunv/uauth/models"
 	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
-	uhttpContextKeys "github.com/dunv/uhttp/contextkeys"
+	contextKeys "github.com/dunv/uhttp/contextkeys"
 	uhttpModels "github.com/dunv/uhttp/models"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -74,7 +74,7 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 	userWithClaims.Permissions = &permissions
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, userWithClaims)
 
-	bCryptSecret := r.Context().Value(uhttpContextKeys.CtxKeyBCryptSecret).(string)
+	bCryptSecret := r.Context().Value(contextKeys.CtxKeyBCryptSecret).(string)
 	signedToken, err := token.SignedString([]byte(bCryptSecret))
 	if err != nil {
 		uhttp.RenderError(w, r, err)
@@ -97,5 +97,5 @@ var loginHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
 // LoginHandler handler for getting JSON web token
 var LoginHandler = uhttpModels.Handler{
 	PostHandler:               loginHandler,
-	AdditionalContextRequired: []uhttpModels.ContextKey{config.CtxKeyUserDB},
+	AdditionalContextRequired: []contextKeys.ContextKey{config.CtxKeyUserDB},
 }

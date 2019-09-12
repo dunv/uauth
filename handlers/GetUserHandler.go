@@ -12,7 +12,7 @@ import (
 	"github.com/dunv/uauth/permissions"
 	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
-	uhttpContextKeys "github.com/dunv/uhttp/contextkeys"
+	contextKeys "github.com/dunv/uhttp/contextkeys"
 	uhttpModels "github.com/dunv/uhttp/models"
 )
 
@@ -26,7 +26,7 @@ var getUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reques
 	}
 
 	// Get Params
-	params := r.Context().Value(uhttpContextKeys.CtxKeyParams).(map[string]interface{})
+	params := r.Context().Value(contextKeys.CtxKeyParams).(map[string]interface{})
 
 	// Get DB
 	db := r.Context().Value(config.CtxKeyUserDB).(*mongo.Client)
@@ -50,7 +50,7 @@ var getUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reques
 
 var GetUserHandler = uhttpModels.Handler{
 	GetHandler:                getUserHandler,
-	AdditionalContextRequired: []uhttpModels.ContextKey{config.CtxKeyUserDB},
+	AdditionalContextRequired: []contextKeys.ContextKey{config.CtxKeyUserDB},
 	AuthRequired:              true,
 	RequiredParams: uhttpModels.Params{ParamMap: map[string]uhttpModels.ParamRequirement{
 		"userId": uhttpModels.ParamRequirement{AllValues: true},

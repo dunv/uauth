@@ -8,6 +8,7 @@ import (
 	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
 	uhttpModels "github.com/dunv/uhttp/models"
+	contextKeys "github.com/dunv/uhttp/contextkeys"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -41,6 +42,6 @@ var getRolesHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reque
 
 var GetRolesHandler = uhttpModels.Handler{
 	GetHandler:                getRolesHandler,
-	AdditionalContextRequired: []uhttpModels.ContextKey{config.CtxKeyUserDB},
+	AdditionalContextRequired: []contextKeys.ContextKey{config.CtxKeyUserDB},
 	AuthRequired:              true,
 }

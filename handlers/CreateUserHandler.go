@@ -11,6 +11,7 @@ import (
 	"github.com/dunv/uauth/permissions"
 	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
+	contextKeys "github.com/dunv/uhttp/contextkeys"
 	uhttpModels "github.com/dunv/uhttp/models"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -92,6 +93,6 @@ var createUserHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 
 var CreateUserHandler = uhttpModels.Handler{
 	PostHandler:               createUserHandler,
-	AdditionalContextRequired: []uhttpModels.ContextKey{config.CtxKeyUserDB},
+	AdditionalContextRequired: []contextKeys.ContextKey{config.CtxKeyUserDB},
 	AuthRequired:              true,
 }
