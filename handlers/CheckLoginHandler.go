@@ -7,9 +7,9 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/dunv/uauth"
 	"github.com/dunv/uauth/models"
 	"github.com/dunv/uhttp"
-	uhttpContextKeys "github.com/dunv/uhttp/contextkeys"
 	uhttpModels "github.com/dunv/uhttp/models"
 	"github.com/dunv/ulog"
 )
@@ -46,7 +46,7 @@ var CheckLoginHandler = uhttpModels.Handler{
 		checkLoginResponse := checkLoginResponse{}
 
 		// Parse token and check signature
-		bCryptSecret := r.Context().Value(uhttpContextKeys.CtxKeyBCryptSecret).(string)
+		bCryptSecret := uauth.BCryptSecret(r)
 		token, err := jwt.ParseWithClaims(checkLoginRequest.Token, &models.UserWithClaimsRaw{}, func(token *jwt.Token) (interface{}, error) {
 			// Don't forget to validate the alg is what you expect:
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

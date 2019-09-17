@@ -11,7 +11,6 @@ import (
 	"github.com/dunv/uauth/models"
 	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
-	contextKeys "github.com/dunv/uhttp/contextkeys"
 	uhttpModels "github.com/dunv/uhttp/models"
 )
 
@@ -37,7 +36,7 @@ var LoginHandler = uhttpModels.Handler{
 			return
 		}
 
-		userService := services.NewUserService(uauth.UserDB(r))
+		userService := services.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
 		userFromDb, err := userService.GetByUserName(loginRequest.User.UserName)
 
 		// Verify user with password
@@ -47,7 +46,7 @@ var LoginHandler = uhttpModels.Handler{
 		}
 
 		// Get Roles
-		rolesService := services.NewRoleService(uauth.UserDB(r))
+		rolesService := services.NewRoleService(uauth.UserDB(r), uauth.UserDBName(r))
 		roles, err := rolesService.GetMultipleByName(*userFromDb.Roles)
 
 		// Check error
@@ -72,7 +71,7 @@ var LoginHandler = uhttpModels.Handler{
 		userWithClaims.Permissions = &permissions
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, userWithClaims)
 
-		bCryptSecret := r.Context().Value(contextKeys.CtxKeyBCryptSecret).(string)
+		bCryptSecret := uauth.BCryptSecret(r)
 		signedToken, err := token.SignedString([]byte(bCryptSecret))
 		if err != nil {
 			uhttp.RenderError(w, r, err)

@@ -24,7 +24,7 @@ type createUserModel struct {
 }
 
 var CreateUserHandler = uhttpModels.Handler{
-	AuthRequired: true,
+	AddMiddleware: uauth.AuthJWT(),
 	PostHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := uauth.User(r)
 		if !user.CheckPermission(permissions.CanCreateUsers) {
@@ -42,7 +42,7 @@ var CreateUserHandler = uhttpModels.Handler{
 		}
 
 		// Verify all roles exist
-		roleService := services.NewRoleService(uauth.UserDB(r))
+		roleService := services.NewRoleService(uauth.UserDB(r), uauth.UserDBName(r))
 		allRoles, err := roleService.List()
 		if err != nil {
 			uhttp.RenderError(w, r, err)
@@ -69,7 +69,7 @@ var CreateUserHandler = uhttpModels.Handler{
 			return
 		}
 
-		userService := services.NewUserService(uauth.UserDB(r))
+		userService := services.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
 		userToBeCreated := models.User{
 			UserName:  userFromRequest.UserName,
 			FirstName: userFromRequest.FirstName,

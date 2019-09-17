@@ -17,8 +17,8 @@ const (
 )
 
 // CreateInitialRolesIfNotExist roles if non-existant
-func CreateInitialRolesIfNotExist(s *mongo.Client) {
-	roleService := NewRoleService(s)
+func CreateInitialRolesIfNotExist(s *mongo.Client, dbName string) {
+	roleService := NewRoleService(s, dbName)
 	allRoles, err := roleService.List()
 	if err != nil {
 		ulog.Infof("Error loading roles (%s) \n", err)
@@ -45,8 +45,8 @@ func CreateInitialRolesIfNotExist(s *mongo.Client) {
 }
 
 // CreateInitialUsersIfNotExist creates users if non-existant
-func CreateInitialUsersIfNotExist(s *mongo.Client) {
-	userService := NewUserService(s)
+func CreateInitialUsersIfNotExist(s *mongo.Client, dbName string) {
+	userService := NewUserService(s, dbName)
 
 	allUsers, err := userService.List()
 	if err != nil {
@@ -75,8 +75,8 @@ func CreateInitialUsersIfNotExist(s *mongo.Client) {
 }
 
 // CreateCustomRolesIfNotExist <-
-func CreateCustomRolesIfNotExist(s *mongo.Client, wantedRoles []models.Role, identifier string) error {
-	roleService := NewRoleService(s)
+func CreateCustomRolesIfNotExist(s *mongo.Client, dbName string, wantedRoles []models.Role, identifier string) error {
+	roleService := NewRoleService(s, dbName)
 	allRoles, err := roleService.List()
 	if err != nil {
 		ulog.Infof("Error loading roles (%s)", err)

@@ -17,6 +17,8 @@ github.com/dunv/uhttp v1.0.27 h1:FKi5UwwQYDajpDM0BxBUHqUlIlsz1VJAIJAFKWAvw/E=
 github.com/dunv/uhttp v1.0.27/go.mod h1:xrnJB02z6mBcBQ4rZFBHxrHGmFgtbxpqrIpm8P/1F4A=
 github.com/dunv/ulog v0.0.8 h1:t18Z1ZPJdemIkCr9jJy/Pept6mpC2tPxGoABsUTLY5E=
 github.com/dunv/ulog v0.0.8/go.mod h1:tLx87vZIy7+srmB52LJ8U6Exqnkj5jJ8AaA8cWQp6xs=
+github.com/dunv/ulog v0.0.10 h1:yYlw4FeOg1pBAH3uySPsxcYKgj+vcnhteiAXpAElh4g=
+github.com/dunv/ulog v0.0.10/go.mod h1:tLx87vZIy7+srmB52LJ8U6Exqnkj5jJ8AaA8cWQp6xs=
 github.com/dunv/umongo v1.0.8/go.mod h1:GTE/PEH/OJF+EHzgrjwFI3OUSoyu0tJxHbBCg29pNng=
 github.com/go-stack/stack v1.8.0 h1:5SgMzNM5HxrEjV0ww2lTmX6E2Izsfxas4+YHWRs3Lsk=
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
@@ -33,6 +35,7 @@ github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+
 github.com/stretchr/testify v1.2.2 h1:bSDNvY7ZPG5RlJ8otE/7V6gMiyenm9RtJ7IUVIAoJ1w=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
+github.com/tidwall/pretty v1.0.0 h1:HsD+QiTn7sK6flMKIvNmpqz1qrpP3Ps6jOKIKMooyg4=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
 github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c h1:u40Z8hqBAAQyv+vATcGgV0YCnDjqSL7/q/JyPhhJSPk=
 github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c/go.mod h1:lB8K/P019DLNhemzwFU4jHLhdvlE6uDZjXFejJXr49I=

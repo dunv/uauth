@@ -12,7 +12,7 @@ import (
 )
 
 var ListUsersHandler = uhttpModels.Handler{
-	AuthRequired: true,
+	AddMiddleware: uauth.AuthJWT(),
 	GetHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := uauth.User(r)
 		if !user.CheckPermission(permissions.CanReadUsers) {
@@ -20,7 +20,7 @@ var ListUsersHandler = uhttpModels.Handler{
 			return
 		}
 
-		userService := services.NewUserService(uauth.UserDB(r))
+		userService := services.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
 		usersFromDb, err := userService.List()
 
 		if err != nil {

@@ -12,7 +12,7 @@ import (
 )
 
 var ListRolesHandler = uhttpModels.Handler{
-	AuthRequired: true,
+	AddMiddleware: uauth.AuthJWT(),
 	GetHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := uauth.User(r)
 		if !user.CheckPermission(permissions.CanReadUsers) {
@@ -20,7 +20,7 @@ var ListRolesHandler = uhttpModels.Handler{
 			return
 		}
 
-		roleService := services.NewRoleService(uauth.UserDB(r))
+		roleService := services.NewRoleService(uauth.UserDB(r), uauth.UserDBName(r))
 		rolesFromDb, err := roleService.List()
 
 		if err != nil {

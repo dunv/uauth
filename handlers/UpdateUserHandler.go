@@ -15,7 +15,7 @@ import (
 )
 
 var UpdateUserHandler = uhttpModels.Handler{
-	AuthRequired: true,
+	AddMiddleware: uauth.AuthJWT(),
 	PostHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := uauth.User(r)
 		if !user.CheckPermission(permissions.CanUpdateUsers) {
@@ -32,7 +32,7 @@ var UpdateUserHandler = uhttpModels.Handler{
 			return
 		}
 
-		service := services.NewUserService(uauth.UserDB(r))
+		service := services.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
 
 		// Load user to check if it exists!
 		if user.ID == nil {
@@ -59,7 +59,7 @@ var UpdateUserHandler = uhttpModels.Handler{
 
 		// Verify all roles exist
 		if userFromRequest.Roles != nil {
-			roleService := services.NewRoleService(uauth.UserDB(r))
+			roleService := services.NewRoleService(uauth.UserDB(r), uauth.UserDBName(r))
 			allRoles, err := roleService.List()
 			if err != nil {
 				uhttp.RenderError(w, r, err)

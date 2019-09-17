@@ -14,7 +14,7 @@ import (
 )
 
 var DeleteUserHandler = uhttpModels.Handler{
-	AuthRequired: true,
+	AddMiddleware: uauth.AuthJWT(),
 	RequiredGet: params.R{
 		"userId": params.STRING,
 	},
@@ -25,7 +25,7 @@ var DeleteUserHandler = uhttpModels.Handler{
 			return
 		}
 
-		service := services.NewUserService(uauth.UserDB(r))
+		service := services.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
 		ID, err := primitive.ObjectIDFromHex(*params.GetAsString("userId", r))
 		if err != nil {
 			uhttp.RenderError(w, r, err)

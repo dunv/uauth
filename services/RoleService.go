@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 
-	"github.com/dunv/uauth"
 	"github.com/dunv/uauth/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -17,10 +16,10 @@ type RoleService struct {
 }
 
 // NewRoleService for creating a RoleService
-func NewRoleService(db *mongo.Client) *RoleService {
+func NewRoleService(db *mongo.Client, dbName string) *RoleService {
 	return &RoleService{
 		Client:     db,
-		Database:   uauth.Config().UserDbName,
+		Database:   dbName,
 		Collection: "roles",
 	}
 }

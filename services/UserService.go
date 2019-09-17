@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/dunv/uauth"
 	"github.com/dunv/uauth/interfaces"
 	"github.com/dunv/uauth/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -20,10 +19,10 @@ type UserService struct {
 }
 
 // NewUserService for creating a UserService
-func NewUserService(db *mongo.Client) *UserService {
+func NewUserService(db *mongo.Client, dbName string) *UserService {
 	return &UserService{
 		Client:     db,
-		Database:   uauth.Config().UserDbName,
+		Database:   dbName,
 		Collection: "users",
 	}
 }

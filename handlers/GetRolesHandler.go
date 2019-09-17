@@ -19,7 +19,7 @@ type rolesGetResponse struct {
 
 // RolesGetHandler for getting days for the logged in user
 var GetRolesHandler = uhttpModels.Handler{
-	AuthRequired: true,
+	AddMiddleware: uauth.AuthJWT(),
 	GetHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := uauth.User(r)
 		if !user.CheckPermission(permissions.CanReadUsers) {
@@ -28,7 +28,7 @@ var GetRolesHandler = uhttpModels.Handler{
 		}
 
 		// Get Roles
-		rolesService := services.NewRoleService(uauth.UserDB(r))
+		rolesService := services.NewRoleService(uauth.UserDB(r), uauth.UserDBName(r))
 		roles, err := rolesService.GetMultipleByName(*user.Roles)
 
 		// Check error
