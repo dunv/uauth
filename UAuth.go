@@ -13,7 +13,7 @@ import (
 
 var packageConfig config.Config
 
-func SetConfig(_config config.Config) {
+func SetConfig(_config config.Config) error {
 	packageConfig = _config
 	models.AdditionalAttributesModel = _config.AdditionalUserAttributes
 
@@ -21,8 +21,22 @@ func SetConfig(_config config.Config) {
 	uhttp.AddContext(CtxKeyUserDbName, _config.UserDbName)
 	uhttp.AddContext(CtxKeyBCryptSecret, _config.BCryptSecret)
 
-	services.CreateInitialRolesIfNotExist(_config.UserDbClient, _config.UserDbName)
-	services.CreateInitialUsersIfNotExist(_config.UserDbClient, _config.UserDbName)
+	if err := services.CreateInitialRolesIfNotExist(_config.UserDbClient, _config.UserDbName); err != nil {
+		return err
+	}
+
+	if err := services.CreateInitialUsersIfNotExist(_config.UserDbClient, _config.UserDbName); err != nil {
+		return err
+	}
+
+	if len(_config.WantedRoles) > 0 {
+		err := services.CreateCustomRolesIfNotExist(_config.UserDbClient, _config.UserDbName, _config.WantedRoles, _config.TokenIssuer)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func Config() config.Config {

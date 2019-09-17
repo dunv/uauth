@@ -17,12 +17,11 @@ const (
 )
 
 // CreateInitialRolesIfNotExist roles if non-existant
-func CreateInitialRolesIfNotExist(s *mongo.Client, dbName string) {
+func CreateInitialRolesIfNotExist(s *mongo.Client, dbName string) error {
 	roleService := NewRoleService(s, dbName)
 	allRoles, err := roleService.List()
 	if err != nil {
-		ulog.Infof("Error loading roles (%s) \n", err)
-		return
+		return fmt.Errorf("Error loading roles (%s) \n", err)
 	}
 
 	if len(*allRoles) == 0 {
@@ -38,20 +37,24 @@ func CreateInitialRolesIfNotExist(s *mongo.Client, dbName string) {
 		}}
 		for _, role := range roles {
 			ulog.Infof("role: %s", role.Name)
-			ulog.LogIfError(roleService.CreateRole(&role))
+			err = roleService.CreateRole(&role)
+			if err != nil {
+				return fmt.Errorf("could not create role %s (%s)", role.Name, err)
+			}
 		}
 		ulog.Info("Done.")
 	}
+
+	return nil
 }
 
 // CreateInitialUsersIfNotExist creates users if non-existant
-func CreateInitialUsersIfNotExist(s *mongo.Client, dbName string) {
+func CreateInitialUsersIfNotExist(s *mongo.Client, dbName string) error {
 	userService := NewUserService(s, dbName)
 
 	allUsers, err := userService.List()
 	if err != nil {
-		ulog.Infof("Error loading users (%s)", err)
-		return
+		return fmt.Errorf("Error loading users (%s)", err)
 	}
 
 	if len(*allUsers) == 0 {
@@ -68,10 +71,14 @@ func CreateInitialUsersIfNotExist(s *mongo.Client, dbName string) {
 			hashedPassword, _ := user.HashPassword(pw)
 			user.Password = &hashedPassword
 			ulog.Infof("user: %s, pw: %s", user.UserName, pw)
-			ulog.LogIfError(userService.CreateUser(&user))
+			err = userService.CreateUser(&user)
+			if err != nil {
+				return fmt.Errorf("could not create user %s (%s)", user.UserName, err)
+			}
 		}
 		ulog.Infof("Done.")
 	}
+	return nil
 }
 
 // CreateCustomRolesIfNotExist <-
@@ -79,7 +86,6 @@ func CreateCustomRolesIfNotExist(s *mongo.Client, dbName string, wantedRoles []m
 	roleService := NewRoleService(s, dbName)
 	allRoles, err := roleService.List()
 	if err != nil {
-		ulog.Infof("Error loading roles (%s)", err)
 		return fmt.Errorf("Error loading roles")
 	}
 
@@ -102,11 +108,13 @@ func CreateCustomRolesIfNotExist(s *mongo.Client, dbName string, wantedRoles []m
 		ulog.Infof("Creating initial roles (%s)... \n", identifier)
 		for _, role := range missingRoles {
 			ulog.Infof("role: %s", role.Name)
-			roleService.CreateRole(&role) // nolint
+			err = roleService.CreateRole(&role)
+			if err != nil {
+				return fmt.Errorf("could not create role %s (%s)", role.Name, err)
+			}
 		}
 		ulog.Info("Done.")
 	}
-
 	return nil
 }
 
