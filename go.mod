@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/dunv/uhelpers v1.0.4
 	github.com/dunv/uhttp v1.0.28
 	github.com/dunv/ulog v0.0.10
 	github.com/dunv/umongo v1.0.8
