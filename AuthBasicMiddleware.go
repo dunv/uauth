@@ -7,12 +7,11 @@ import (
 	"net/http"
 
 	"github.com/dunv/uhttp"
-	uhttpModels "github.com/dunv/uhttp/models"
 	uhttpHelpers "github.com/dunv/uhttp/helpers"
 )
 
-func AuthBasic(wantedUsername string, wantedMd5Password string) *uhttpModels.Middleware {
-	tmp := uhttpModels.Middleware(func(next http.HandlerFunc) http.HandlerFunc {
+func AuthBasic(wantedUsername string, wantedMd5Password string) *uhttp.Middleware {
+	tmp := uhttp.Middleware(func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 
 			user, pass, ok := r.BasicAuth()

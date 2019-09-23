@@ -10,11 +10,10 @@ import (
 	"github.com/dunv/uauth/permissions"
 	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
-	uhttpModels "github.com/dunv/uhttp/models"
 	"github.com/dunv/uhttp/params"
 )
 
-var GetUserHandler = uhttpModels.Handler{
+var GetUserHandler = uhttp.Handler{
 	AddMiddleware: uauth.AuthJWT(),
 	RequiredGet: params.R{
 		"userId": params.STRING,

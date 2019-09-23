@@ -9,7 +9,6 @@ import (
 	"github.com/dunv/uauth/permissions"
 	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
-	uhttpModels "github.com/dunv/uhttp/models"
 )
 
 type rolesGetResponse struct {
@@ -18,7 +17,7 @@ type rolesGetResponse struct {
 }
 
 // RolesGetHandler for getting days for the logged in user
-var GetRolesHandler = uhttpModels.Handler{
+var GetRolesHandler = uhttp.Handler{
 	AddMiddleware: uauth.AuthJWT(),
 	GetHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := uauth.User(r)

@@ -11,7 +11,6 @@ import (
 	"github.com/dunv/uauth/models"
 	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
-	uhttpModels "github.com/dunv/uhttp/models"
 )
 
 type loginRequest struct {
@@ -25,7 +24,7 @@ type loginResponse struct {
 }
 
 // LoginHandler handler for getting JSON web token
-var LoginHandler = uhttpModels.Handler{
+var LoginHandler = uhttp.Handler{
 	PostHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Parse request
 		loginRequest := loginRequest{}

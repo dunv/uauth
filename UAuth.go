@@ -11,6 +11,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// TODO: protect methods which can only be used if config has been initialized
+// TODO: expose authGet, Basic, JWT with custom usermodels as "helpers"
+
 var packageConfig config.Config
 
 func SetConfig(_config config.Config) error {
@@ -19,7 +22,7 @@ func SetConfig(_config config.Config) error {
 
 	uhttp.AddContext(CtxKeyUserDbClient, _config.UserDbClient)
 	uhttp.AddContext(CtxKeyUserDbName, _config.UserDbName)
-	uhttp.AddContext(CtxKeyBCryptSecret, _config.BCryptSecrets)
+	uhttp.AddContext(CtxKeyBCryptSecret, _config.BCryptSecret)
 
 	if err := services.CreateInitialRolesIfNotExist(_config.UserDbClient, _config.UserDbName); err != nil {
 		return err
@@ -67,10 +70,10 @@ func UserDBName(r *http.Request) string {
 	return ""
 }
 
-func BCryptSecret(r *http.Request) []string {
-	if bCryptSecret, ok := r.Context().Value(CtxKeyBCryptSecret).([]string); ok {
+func BCryptSecret(r *http.Request) string {
+	if bCryptSecret, ok := r.Context().Value(CtxKeyBCryptSecret).(string); ok {
 		return bCryptSecret
 	}
 	ulog.Errorf("could not find userDbName in request context")
-	return []string{""}
+	return ""
 }

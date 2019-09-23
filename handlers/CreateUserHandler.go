@@ -11,7 +11,6 @@ import (
 	"github.com/dunv/uauth/permissions"
 	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
-	uhttpModels "github.com/dunv/uhttp/models"
 )
 
 type createUserModel struct {
@@ -23,7 +22,7 @@ type createUserModel struct {
 	Roles                []string         `bson:"roles" json:"roles"`
 }
 
-var CreateUserHandler = uhttpModels.Handler{
+var CreateUserHandler = uhttp.Handler{
 	AddMiddleware: uauth.AuthJWT(),
 	PostHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := uauth.User(r)

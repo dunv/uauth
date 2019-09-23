@@ -3,6 +3,7 @@ package helpers
 import (
 	"fmt"
 	"net/http"
+	"reflect"
 	"strings"
 	"time"
 
@@ -10,19 +11,17 @@ import (
 	"github.com/dunv/uauth/models"
 )
 
-// GetUserFromRequestHeaders tries to get the userModel from a request using the "Authorization" header and "Bearer" scheme
-func GetUserFromRequestHeaders(r *http.Request, bCryptSecret string) (*models.User, error) {
+func GetCustomUserFromRequestHeaders(r *http.Request, bCryptSecret string, userModel interface{}) (interface{}, error) {
 	wholeHeader := r.Header.Get("Authorization")
 	var parsableToken string
 	if strings.Contains(wholeHeader, "Bearer ") {
 		parsableToken = strings.Replace(wholeHeader, "Bearer ", "", 1)
 	}
 
-	return getUserFromToken(parsableToken, bCryptSecret)
+	return getCustomUserFromToken(parsableToken, bCryptSecret, userModel)
 }
 
-// GetUserFromRequest tries to get the userModel from a request using a token attribute from the get params
-func GetUserFromRequestGetParams(r *http.Request, bCryptSecret string, queryParam ...*string) (*models.User, error) {
+func GetCustomUserFromRequestGetParams(r *http.Request, bCryptSecret string, userModel interface{}, queryParam ...*string) (interface{}, error) {
 	usedParam := "jwt"
 	if queryParam != nil && len(queryParam) == 1 && queryParam[0] != nil {
 		usedParam = *queryParam[0]
@@ -34,11 +33,12 @@ func GetUserFromRequestGetParams(r *http.Request, bCryptSecret string, queryPara
 		return nil, fmt.Errorf("Could not get token from urlParam %s", usedParam)
 	}
 	parsableToken := rawParsableToken[0]
-	return getUserFromToken(parsableToken, bCryptSecret)
+	return getCustomUserFromToken(parsableToken, bCryptSecret, userModel)
 }
 
-func getUserFromToken(parsableToken string, bCryptSecret string) (*models.User, error) {
-	token, err := jwt.ParseWithClaims(parsableToken, &models.UserWithClaimsRaw{}, func(token *jwt.Token) (interface{}, error) {
+func getCustomUserFromToken(parsableToken string, bCryptSecret string, userModel interface{}) (interface{}, error) {
+	model := reflect.New(reflect.TypeOf(userModel)).Interface().(jwt.Claims)
+	token, err := jwt.ParseWithClaims(parsableToken, model, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}

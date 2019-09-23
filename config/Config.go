@@ -7,7 +7,7 @@ import (
 )
 
 type Config struct {
-	BCryptSecrets            []string
+	BCryptSecret             string
 	UserDbClient             *mongo.Client
 	UserDbName               string
 	TokenIssuer              string

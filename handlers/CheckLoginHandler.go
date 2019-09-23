@@ -10,7 +10,6 @@ import (
 	"github.com/dunv/uauth"
 	"github.com/dunv/uauth/models"
 	"github.com/dunv/uhttp"
-	uhttpModels "github.com/dunv/uhttp/models"
 	"github.com/dunv/ulog"
 )
 
@@ -32,7 +31,7 @@ func (r checkLoginResponse) AllOk() bool {
 }
 
 // CheckLoginHandler for testing a user's webtoken
-var CheckLoginHandler = uhttpModels.Handler{
+var CheckLoginHandler = uhttp.Handler{
 	PostHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Parse request
 		checkLoginRequest := checkLoginRequest{}
