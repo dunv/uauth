@@ -26,6 +26,7 @@ func GetUserFromRequestHeaders(r *http.Request, bCryptSecrets []string) (*models
 			return user, nil
 		}
 	}
+	// TODO: find a good way of logging which secret was used
 	return nil, err
 }
 
@@ -51,6 +52,7 @@ func GetUserFromRequestGetParams(r *http.Request, bCryptSecrets []string, queryP
 			return user, nil
 		}
 	}
+	// TODO: find a good way of logging which secret was used
 	return nil, err
 }
 
