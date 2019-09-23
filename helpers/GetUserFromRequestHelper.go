@@ -11,17 +11,26 @@ import (
 )
 
 // GetUserFromRequestHeaders tries to get the userModel from a request using the "Authorization" header and "Bearer" scheme
-func GetUserFromRequestHeaders(r *http.Request, bCryptSecret string) (*models.User, error) {
+func GetUserFromRequestHeaders(r *http.Request, bCryptSecrets []string) (*models.User, error) {
 	wholeHeader := r.Header.Get("Authorization")
 	var parsableToken string
 	if strings.Contains(wholeHeader, "Bearer ") {
 		parsableToken = strings.Replace(wholeHeader, "Bearer ", "", 1)
 	}
-	return getUserFromToken(parsableToken, bCryptSecret)
+
+	var err error
+	for _, bCryptSecret := range bCryptSecrets {
+		var user *models.User
+		user, err = getUserFromToken(parsableToken, bCryptSecret)
+		if err == nil {
+			return user, nil
+		}
+	}
+	return nil, err
 }
 
 // GetUserFromRequest tries to get the userModel from a request using a token attribute from the get params
-func GetUserFromRequestGetParams(r *http.Request, bCryptSecret string, queryParam ...*string) (*models.User, error) {
+func GetUserFromRequestGetParams(r *http.Request, bCryptSecrets []string, queryParam ...*string) (*models.User, error) {
 	usedParam := "token"
 	if queryParam != nil && len(queryParam) == 1 && queryParam[0] != nil {
 		usedParam = *queryParam[0]
@@ -33,7 +42,16 @@ func GetUserFromRequestGetParams(r *http.Request, bCryptSecret string, queryPara
 		return nil, fmt.Errorf("Could not get token from urlParam %s", usedParam)
 	}
 	parsableToken := rawParsableToken[0]
-	return getUserFromToken(parsableToken, bCryptSecret)
+
+	var err error
+	for _, bCryptSecret := range bCryptSecrets {
+		var user *models.User
+		user, err = getUserFromToken(parsableToken, bCryptSecret)
+		if err == nil {
+			return user, nil
+		}
+	}
+	return nil, err
 }
 
 func getUserFromToken(parsableToken string, bCryptSecret string) (*models.User, error) {

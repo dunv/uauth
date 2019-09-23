@@ -19,7 +19,7 @@ func SetConfig(_config config.Config) error {
 
 	uhttp.AddContext(CtxKeyUserDbClient, _config.UserDbClient)
 	uhttp.AddContext(CtxKeyUserDbName, _config.UserDbName)
-	uhttp.AddContext(CtxKeyBCryptSecret, _config.BCryptSecret)
+	uhttp.AddContext(CtxKeyBCryptSecret, _config.BCryptSecrets)
 
 	if err := services.CreateInitialRolesIfNotExist(_config.UserDbClient, _config.UserDbName); err != nil {
 		return err
@@ -67,10 +67,10 @@ func UserDBName(r *http.Request) string {
 	return ""
 }
 
-func BCryptSecret(r *http.Request) string {
-	if bCryptSecret, ok := r.Context().Value(CtxKeyBCryptSecret).(string); ok {
+func BCryptSecret(r *http.Request) []string {
+	if bCryptSecret, ok := r.Context().Value(CtxKeyBCryptSecret).([]string); ok {
 		return bCryptSecret
 	}
 	ulog.Errorf("could not find userDbName in request context")
-	return ""
+	return []string{""}
 }
