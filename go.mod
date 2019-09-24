@@ -8,6 +8,8 @@ require (
 	github.com/dunv/uhttp v1.0.29
 	github.com/dunv/ulog v0.0.13
 	github.com/dunv/umongo v1.0.8
+	github.com/google/go-cmp v0.3.1 // indirect
+	github.com/stretchr/testify v1.4.0 // indirect
 	go.mongodb.org/mongo-driver v1.1.1
 	golang.org/x/crypto v0.0.0-20190907121410-71b5226ff739
 )

@@ -13,6 +13,7 @@ import (
 
 // TODO: protect methods which can only be used if config has been initialized
 // TODO: expose authGet, Basic, JWT with custom usermodels as "helpers"
+// TODO: add logging lib-config
 
 var packageConfig config.Config
 
@@ -76,4 +77,27 @@ func BCryptSecret(r *http.Request) string {
 	}
 	ulog.Errorf("could not find userDbName in request context")
 	return ""
+}
+
+func CustomUser(r *http.Request) interface{} {
+	if r.Context().Value(CtxKeyCustomUser) != nil {
+		return r.Context().Value(CtxKeyCustomUser)
+	}
+	ulog.Errorf("could not find customUser in request context")
+	return nil
+}
+
+func IsAuthBasic(r *http.Request) bool {
+	return IsAuthMethod("basic", r)
+}
+
+func IsAuthJWT(r *http.Request) bool {
+	return IsAuthMethod("jwt", r)
+}
+
+func IsAuthMethod(authMethod string, r *http.Request) bool {
+	if r.Context().Value(CtxKeyAuthMethod) != nil && r.Context().Value(CtxKeyAuthMethod) == authMethod {
+		return true
+	}
+	return false
 }

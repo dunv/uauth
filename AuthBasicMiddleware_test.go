@@ -6,15 +6,19 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/dunv/uauth/helpers"
 	"github.com/dunv/uhttp"
 )
 
-func TestFailingAuthBasic(t *testing.T) {
-	tmp := uhttp.Handler{
+func authBasicFixture() uhttp.Handler {
+	return uhttp.Handler{
 		AddMiddleware: AuthBasic("testUser", "fed3b61b26081849378080b34e693d2e"),
 		GetHandler:    http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}),
 	}
-	ts := httptest.NewServer(tmp.HandlerFunc())
+}
+
+func TestFailingAuthBasic(t *testing.T) {
+	ts := httptest.NewServer(authBasicFixture().HandlerFunc())
 	defer ts.Close()
 	res, err := http.Get(ts.URL)
 	if err != nil {
@@ -26,22 +30,10 @@ func TestFailingAuthBasic(t *testing.T) {
 }
 
 func TestSuccessAuthBasic(t *testing.T) {
-	tmp := uhttp.Handler{
-		AddMiddleware: AuthBasic("testUser", "fed3b61b26081849378080b34e693d2e"),
-		GetHandler:    http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}),
-	}
-	ts := httptest.NewServer(tmp.HandlerFunc())
+	ts := httptest.NewServer(authBasicFixture().HandlerFunc())
 	defer ts.Close()
-	req, err := http.NewRequest(http.MethodGet, ts.URL, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.SetBasicAuth("testUser", "testPassword")
-	client := http.Client{}
-	res, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
+	req := helpers.AuthBasicRequestTest("testUser", "testPassword", http.MethodGet, ts.URL, nil)
+	res := helpers.DoRequestTest(req)
 	if res.StatusCode == http.StatusUnauthorized {
 		t.Errorf("did not allow access to handler")
 	}

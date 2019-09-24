@@ -8,12 +8,17 @@ import (
 	"github.com/dunv/uauth/helpers"
 	"github.com/dunv/uhttp"
 	uhttpHelpers "github.com/dunv/uhttp/helpers"
+	"github.com/dunv/ulog"
 )
 
 // Auth verify JWT token in request header ("Authorization")
 // This method assumes the BCryptSecret already attached to the request context
 // i.e. uauth must have been initialized with uauth.SetConfig(...)
 func AuthJWT() *uhttp.Middleware {
+	if packageConfig.UserDbName == "" || packageConfig.UserDbClient == nil || packageConfig.BCryptSecret == "" {
+		ulog.Fatal("uauth packageConfig has not been set, unable to use AuthJWT()")
+		return nil
+	}
 	tmp := uhttp.Middleware(func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			user, err := helpers.GetUserFromRequestHeaders(r, BCryptSecret(r))
