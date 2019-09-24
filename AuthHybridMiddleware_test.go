@@ -37,8 +37,10 @@ func authHybridTestFixture() uhttp.Handler {
 				"jwt1": "qwertyuiopasdfghjklzxcvbnm123456",
 				"jwt2": "1234qwertyuiopasdfghjklzxcvbnm123456",
 			},
-			"testUser",
-			"fed3b61b26081849378080b34e693d2e",
+			map[string]string{
+				"testUser":  "fed3b61b26081849378080b34e693d2e",
+				"testUser2": "fed3b61b26081849378080b34e693d2e",
+			},
 			testUserModel{},
 		),
 		GetHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -253,7 +255,7 @@ func TestFailureAuthHybridJWT(t *testing.T) {
 	checkAuthHybridResponse(res, nil, t)
 }
 
-func TestSuccessAuthHybridBasic(t *testing.T) {
+func TestSuccessAuthHybridBasicUser1(t *testing.T) {
 	ts := httptest.NewServer(authHybridTestFixture().HandlerFunc())
 	defer ts.Close()
 	req := helpers.AuthBasicRequestTest("testUser", "testPassword", http.MethodGet, ts.URL, nil)
@@ -263,6 +265,25 @@ func TestSuccessAuthHybridBasic(t *testing.T) {
 	}
 	checkAuthHybridResponse(res, &authHybridResponseModel{
 		BasicUser:      "testUser",
+		IsAuthBasic:    true,
+		IsAuthJWT:      false,
+		IsAuth_jwt1:    false,
+		IsAuth_jwt2:    false,
+		IsAuth_jwt1Get: false,
+		IsAuth_jwt2Get: false,
+	}, t)
+}
+
+func TestSuccessAuthHybridBasicUser2(t *testing.T) {
+	ts := httptest.NewServer(authHybridTestFixture().HandlerFunc())
+	defer ts.Close()
+	req := helpers.AuthBasicRequestTest("testUser2", "testPassword", http.MethodGet, ts.URL, nil)
+	res := helpers.DoRequestTest(req)
+	if res.StatusCode == http.StatusUnauthorized {
+		t.Errorf("did not allow access to handler")
+	}
+	checkAuthHybridResponse(res, &authHybridResponseModel{
+		BasicUser:      "testUser2",
 		IsAuthBasic:    true,
 		IsAuthJWT:      false,
 		IsAuth_jwt1:    false,

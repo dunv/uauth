@@ -14,8 +14,7 @@ import (
 
 func AuthHybrid(
 	jwtSecrets map[string]string,
-	authBasicUser string,
-	authBasicMd5Password string,
+	authBasicCredentials map[string]string,
 	userModel jwt.Claims,
 ) *uhttp.Middleware {
 	tmp := uhttp.Middleware(func(next http.HandlerFunc) http.HandlerFunc {
@@ -45,17 +44,23 @@ func AuthHybrid(
 			}
 
 			// try authbasic
-			user, pass, ok := r.BasicAuth()
-			passMd5 := fmt.Sprintf("%x", md5.Sum([]byte(pass)))
-			if !ok || user != authBasicUser || passMd5 != authBasicMd5Password {
-				uhttp.RenderErrorWithStatusCode(w, r, http.StatusUnauthorized, fmt.Errorf("Unauthorized"))
-				return
+			requestUser, requestPassword, ok := r.BasicAuth()
+			requestPasswordMd5 := fmt.Sprintf("%x", md5.Sum([]byte(requestPassword)))
+			if ok {
+				for allowedUser, allowedPasswordMd5 := range authBasicCredentials {
+					if requestUser == allowedUser && requestPasswordMd5 == allowedPasswordMd5 {
+						ctx := context.WithValue(r.Context(), CtxKeyCustomUser, allowedUser)
+						ctx = context.WithValue(ctx, CtxKeyAuthMethod, "basic")
+						ctx = uhttpHelpers.AddToLogLine(ctx, "authMethod", "basic")
+						ctx = uhttpHelpers.AddToLogLine(ctx, "user", allowedUser)
+						next.ServeHTTP(w, r.WithContext(ctx))
+						return
+					}
+				}
 			}
-			ctx := context.WithValue(r.Context(), CtxKeyCustomUser, user)
-			ctx = context.WithValue(ctx, CtxKeyAuthMethod, "basic")
-			ctx = uhttpHelpers.AddToLogLine(ctx, "authMethod", "basic")
-			ctx = uhttpHelpers.AddToLogLine(ctx, "user", authBasicUser)
-			next.ServeHTTP(w, r.WithContext(ctx))
+
+			uhttp.RenderErrorWithStatusCode(w, r, http.StatusUnauthorized, fmt.Errorf("Unauthorized"))
+			return
 		}
 	})
 	return &tmp
