@@ -24,7 +24,7 @@ func GetUserFromRequestHeaders(r *http.Request, bCryptSecret string) (*models.Us
 // GetUserFromRequest tries to get the userModel from a request using a token attribute from the get params
 func GetUserFromRequestGetParams(r *http.Request, bCryptSecret string, queryParam ...*string) (*models.User, error) {
 	usedParam := "jwt"
-	if queryParam != nil && len(queryParam) == 1 && queryParam[0] != nil {
+	if len(queryParam) == 1 && queryParam[0] != nil {
 		usedParam = *queryParam[0]
 	}
 

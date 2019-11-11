@@ -21,7 +21,7 @@ func GetCustomUserFromRequestHeaders(r *http.Request, bCryptSecret string, userM
 
 func GetCustomUserFromRequestGetParams(r *http.Request, bCryptSecret string, userModel jwt.Claims, queryParam ...*string) (interface{}, error) {
 	usedParam := "jwt"
-	if queryParam != nil && len(queryParam) == 1 && queryParam[0] != nil {
+	if len(queryParam) == 1 && queryParam[0] != nil {
 		usedParam = *queryParam[0]
 	}
 

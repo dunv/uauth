@@ -60,7 +60,6 @@ func AuthHybrid(
 			}
 
 			uhttp.RenderErrorWithStatusCode(w, r, http.StatusUnauthorized, fmt.Errorf("Unauthorized"))
-			return
 		}
 	})
 	return &tmp

@@ -38,6 +38,5 @@ var DeleteUserHandler = uhttp.Handler{
 		}
 
 		uhttp.RenderMessageWithStatusCode(w, r, 200, "Deleted successfully")
-		return
 	}),
 }
