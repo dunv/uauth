@@ -40,6 +40,9 @@ var LoginHandler = uhttp.Handler{
 
 		// Verify user with password
 		if err != nil || !(*userFromDb).CheckPassword(*loginRequest.User.Password) {
+			if err == nil {
+				err = fmt.Errorf("nil")
+			}
 			uhttp.RenderError(w, r, fmt.Errorf("No user with this name/password exists (%s)", err))
 			return
 		}

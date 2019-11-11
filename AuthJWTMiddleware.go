@@ -23,6 +23,7 @@ func AuthJWT() *uhttp.Middleware {
 
 			user, err := helpers.GetUserFromRequestHeaders(r, BCryptSecret(r))
 			if err != nil {
+				ulog.Infof("Denying access (%s)", err)
 				uhttp.RenderError(w, r, fmt.Errorf("Unauthorized"))
 				return
 			}
