@@ -2,12 +2,10 @@ package models
 
 import (
 	"github.com/dunv/uauth/permissions"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Role role
 type Role struct {
-	ID          *primitive.ObjectID      `bson:"_id" json:"id,omitempty"`
 	Name        string                   `bson:"name" json:"name"`
 	Permissions []permissions.Permission `bson:"permissions" json:"permissions"`
 }

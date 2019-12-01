@@ -25,7 +25,7 @@ func CreateInitialRolesIfNotExist(s *mongo.Client, dbName string) error {
 	}
 
 	if len(*allRoles) == 0 {
-		ulog.Info("Creating initial roles (auth)...")
+		ulog.Infof("Creating initial roles (auth)...")
 		roles := []models.Role{models.Role{
 			Name: adminRoleName,
 			Permissions: []permissions.Permission{
@@ -81,7 +81,6 @@ func CreateInitialUsersIfNotExist(s *mongo.Client, dbName string) error {
 	return nil
 }
 
-// CreateCustomRolesIfNotExist <-
 func CreateCustomRolesIfNotExist(s *mongo.Client, dbName string, wantedRoles []models.Role, identifier string) error {
 	roleService := NewRoleService(s, dbName)
 	allRoles, err := roleService.List()
@@ -105,7 +104,7 @@ func CreateCustomRolesIfNotExist(s *mongo.Client, dbName string, wantedRoles []m
 	}
 
 	if len(missingRoles) != 0 {
-		ulog.Infof("Creating initial roles (%s)... \n", identifier)
+		ulog.Infof("Creating initial roles (%s)...", identifier)
 		for _, role := range missingRoles {
 			ulog.Infof("role: %s", role.Name)
 			err = roleService.CreateRole(&role)
