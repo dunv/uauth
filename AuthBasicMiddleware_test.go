@@ -1,6 +1,7 @@
 package uauth
 
 import (
+	"bufio"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -8,9 +9,13 @@ import (
 
 	"github.com/dunv/uauth/helpers"
 	"github.com/dunv/uhttp"
+	"github.com/dunv/ulog"
 )
 
 func authBasicFixture() uhttp.Handler {
+	// Suppress log-output
+	ulog.SetWriter(bufio.NewWriter(nil), nil)
+
 	return uhttp.Handler{
 		AddMiddleware: AuthBasic("testUser", "fed3b61b26081849378080b34e693d2e"),
 		GetHandler:    http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}),

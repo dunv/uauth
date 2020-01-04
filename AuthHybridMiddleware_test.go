@@ -1,15 +1,18 @@
 package uauth
 
 import (
+	"bufio"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/dunv/uauth/helpers"
 	"github.com/dunv/uhttp"
+	"github.com/dunv/ulog"
 )
 
 type testUserModel struct {
@@ -31,6 +34,9 @@ type authHybridResponseModel struct {
 }
 
 func authHybridTestFixture() uhttp.Handler {
+	// Suppress log-output
+	ulog.SetWriter(bufio.NewWriter(nil), nil)
+
 	return uhttp.Handler{
 		AddMiddleware: AuthHybrid(
 			map[string]string{
@@ -126,10 +132,10 @@ func checkAuthHybridResponse(res *http.Response, expected *authHybridResponseMod
 		t.Errorf("could not read expected unauthorized body %v", err)
 	}
 
-	received := string(body)
+	received := strings.ReplaceAll(string(body), "\n", "")
 	expectedBody := `{"error":"Unauthorized"}`
 	if received != expectedBody {
-		t.Errorf("unauthorized body was not received correctly. expected: %s, received %s", expectedBody, received)
+		t.Errorf("unauthorized body was not received correctly. expected: '%s', received '%s'", expectedBody, received)
 	}
 }
 
