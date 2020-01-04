@@ -9,7 +9,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/dunv/uauth/helpers"
 	"github.com/dunv/uhttp"
-	uhttpHelpers "github.com/dunv/uhttp/helpers"
+	"github.com/dunv/ulog"
 )
 
 func AuthHybrid(
@@ -25,7 +25,7 @@ func AuthHybrid(
 				if err == nil {
 					ctx := context.WithValue(r.Context(), CtxKeyCustomUser, user)
 					ctx = context.WithValue(ctx, CtxKeyAuthMethod, name)
-					ctx = uhttpHelpers.AddToLogLine(ctx, "authMethod", name)
+					ulog.LogIfError(uhttp.AddLogOutput(w, "authMethod", name))
 					next.ServeHTTP(w, r.WithContext(ctx))
 					return
 				}
@@ -37,7 +37,7 @@ func AuthHybrid(
 				if err == nil {
 					ctx := context.WithValue(r.Context(), CtxKeyCustomUser, user)
 					ctx = context.WithValue(ctx, CtxKeyAuthMethod, fmt.Sprintf("%sGet", name))
-					ctx = uhttpHelpers.AddToLogLine(ctx, "authMethod", fmt.Sprintf("%sGet", name))
+					ulog.LogIfError(uhttp.AddLogOutput(w, "authMethod", fmt.Sprintf("%sGet", name)))
 					next.ServeHTTP(w, r.WithContext(ctx))
 					return
 				}
@@ -51,8 +51,8 @@ func AuthHybrid(
 					if requestUser == allowedUser && requestPasswordMd5 == allowedPasswordMd5 {
 						ctx := context.WithValue(r.Context(), CtxKeyCustomUser, allowedUser)
 						ctx = context.WithValue(ctx, CtxKeyAuthMethod, "basic")
-						ctx = uhttpHelpers.AddToLogLine(ctx, "authMethod", "basic")
-						ctx = uhttpHelpers.AddToLogLine(ctx, "user", allowedUser)
+						ulog.LogIfError(uhttp.AddLogOutput(w, "authMethod", "basic"))
+						ulog.LogIfError(uhttp.AddLogOutput(w, "user", allowedUser))
 						next.ServeHTTP(w, r.WithContext(ctx))
 						return
 					}

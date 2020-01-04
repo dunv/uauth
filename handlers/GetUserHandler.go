@@ -10,13 +10,12 @@ import (
 	"github.com/dunv/uauth/permissions"
 	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
-	"github.com/dunv/uhttp/params"
 )
 
 var GetUserHandler = uhttp.Handler{
 	AddMiddleware: uauth.AuthJWT(),
-	RequiredGet: params.R{
-		"userId": params.STRING,
+	RequiredGet: uhttp.R{
+		"userId": uhttp.STRING,
 	},
 	GetHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := uauth.User(r)
@@ -26,7 +25,7 @@ var GetUserHandler = uhttp.Handler{
 		}
 
 		service := services.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
-		ID, err := primitive.ObjectIDFromHex(*params.GetAsString("userId", r))
+		ID, err := primitive.ObjectIDFromHex(*uhttp.GetAsString("userId", r))
 		if err != nil {
 			uhttp.RenderError(w, r, err)
 			return

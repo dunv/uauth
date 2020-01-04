@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/dunv/uhttp"
-	uhttpHelpers "github.com/dunv/uhttp/helpers"
+	"github.com/dunv/ulog"
 )
 
 func AuthBasic(wantedUsername string, wantedMd5Password string) *uhttp.Middleware {
@@ -24,8 +24,8 @@ func AuthBasic(wantedUsername string, wantedMd5Password string) *uhttp.Middlewar
 
 			ctx := context.WithValue(r.Context(), CtxKeyUser, user)
 			ctx = context.WithValue(ctx, CtxKeyAuthMethod, "basic")
-			ctx = uhttpHelpers.AddToLogLine(ctx, "authMethod", "basic")
-			ctx = uhttpHelpers.AddToLogLine(ctx, "user", user)
+			ulog.LogIfError(uhttp.AddLogOutput(w, "authMethod", "basic"))
+			ulog.LogIfError(uhttp.AddLogOutput(w, "user", user))
 			next.ServeHTTP(w, r.WithContext(ctx))
 		}
 	})

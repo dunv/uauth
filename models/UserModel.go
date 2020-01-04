@@ -10,7 +10,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// User user
+// User
 type User struct {
 	ID                      *primitive.ObjectID                          `bson:"_id" json:"id,omitempty"`
 	UserName                string                                       `bson:"userName" json:"userName"`

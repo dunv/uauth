@@ -7,7 +7,6 @@ import (
 
 	"github.com/dunv/uauth/helpers"
 	"github.com/dunv/uhttp"
-	uhttpHelpers "github.com/dunv/uhttp/helpers"
 	"github.com/dunv/ulog"
 )
 
@@ -29,8 +28,8 @@ func AuthJWT() *uhttp.Middleware {
 			}
 			ctx := context.WithValue(r.Context(), CtxKeyUser, *user)
 			ctx = context.WithValue(ctx, CtxKeyAuthMethod, "jwt")
-			ctx = uhttpHelpers.AddToLogLine(ctx, "authMethod", "jwt")
-			ctx = uhttpHelpers.AddToLogLine(ctx, "user", user.UserName)
+			ulog.LogIfError(uhttp.AddLogOutput(w, "authMethod", "jwt"))
+			ulog.LogIfError(uhttp.AddLogOutput(w, "user", user.UserName))
 			next.ServeHTTP(w, r.WithContext(ctx))
 		}
 	})

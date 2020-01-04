@@ -8,6 +8,8 @@ github.com/dgrijalva/jwt-go v3.2.0+incompatible h1:7qlOGliEKZXTDg6OTjfoBKDXWrumC
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dunv/uhelpers v1.0.4 h1:EdxjjhT0n9CfpqQuA4V0A+GAxmFhbtNg9CB8EsHoCH8=
 github.com/dunv/uhelpers v1.0.4/go.mod h1:e01Y+aVv/p2Te+5P5pZb6GiaOBce9jxDXE7bpJaBez4=
+github.com/dunv/uhelpers v1.0.11 h1:oaiayyaotrgSmhvUm0tFv+IyIhgTM7g211rx1Tv3hcM=
+github.com/dunv/uhelpers v1.0.11/go.mod h1:Y8BAqY06wly5JR18Yh7vpPSZ7aR950QoxTAQZD5lE9E=
 github.com/dunv/uhttp v1.0.24 h1:H1ZYqM4kN1TPCZ01tcfQZTBjpwyzoRCp7NgQvkspEsw=
 github.com/dunv/uhttp v1.0.24/go.mod h1:5IVzioJiJOWDYvevzO2Tre/Q6WELuNBZO8Z16JXtP1I=
 github.com/dunv/uhttp v1.0.25 h1:ZZG178Wac9TlaeMi3TDHBaWqfvSdYqhVvSPA0iKx33g=
@@ -26,6 +28,8 @@ github.com/dunv/ulog v0.0.10 h1:yYlw4FeOg1pBAH3uySPsxcYKgj+vcnhteiAXpAElh4g=
 github.com/dunv/ulog v0.0.10/go.mod h1:tLx87vZIy7+srmB52LJ8U6Exqnkj5jJ8AaA8cWQp6xs=
 github.com/dunv/ulog v0.0.13 h1:P7+t1TE77OXfgnvxpXTbyjfKCwfVOps+bybiZ+fhfk0=
 github.com/dunv/ulog v0.0.13/go.mod h1:tLx87vZIy7+srmB52LJ8U6Exqnkj5jJ8AaA8cWQp6xs=
+github.com/dunv/ulog v1.0.8 h1:ihhfO1mAKPirD9H4E8oTeQWwLWqhw7deYcFRvVgUKSM=
+github.com/dunv/ulog v1.0.8/go.mod h1:tLx87vZIy7+srmB52LJ8U6Exqnkj5jJ8AaA8cWQp6xs=
 github.com/dunv/umongo v1.0.8/go.mod h1:GTE/PEH/OJF+EHzgrjwFI3OUSoyu0tJxHbBCg29pNng=
 github.com/go-stack/stack v1.8.0 h1:5SgMzNM5HxrEjV0ww2lTmX6E2Izsfxas4+YHWRs3Lsk=
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
