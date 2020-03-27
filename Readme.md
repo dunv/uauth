@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/dunv/uauth.svg?branch=master)](https://travis-ci.org/dunv/uauth)
+[![Build Status](https://travis-ci.com/dunv/uauth.svg?branch=master)](https://travis-ci.com/dunv/uauth)
 [![GoDoc](https://godoc.org/github.com/dunv/uauth?status.svg)](https://godoc.org/github.com/dunv/uauth)
 [![codecov](https://codecov.io/gh/dunv/uauth/branch/master/graph/badge.svg)](https://codecov.io/gh/dunv/uauth)
 
