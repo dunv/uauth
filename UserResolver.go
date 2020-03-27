@@ -3,17 +3,17 @@ package uauth
 import (
 	"net/http"
 
-	"github.com/dunv/uauth/models"
 	"github.com/dunv/ulog"
 )
 
+// Resolves the userName from a request when using JWT
 func AuthJWTUserResolver() func(r *http.Request) string {
 	return func(r *http.Request) string {
 		test := r.Context().Value(CtxKeyUser)
 		if test == nil {
 			return ""
 		}
-		if user, ok := test.(models.User); ok {
+		if user, ok := test.(User); ok {
 			return user.UserName
 		}
 		ulog.Warnf("wrong type in CtxKeyUser (%T)", test)
@@ -21,6 +21,7 @@ func AuthJWTUserResolver() func(r *http.Request) string {
 	}
 }
 
+// Resolves the userName from a request when using authBasic
 func AuthBasicUserResolver() func(r *http.Request) string {
 	return func(r *http.Request) string {
 		test := r.Context().Value(CtxKeyUser)

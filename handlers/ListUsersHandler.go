@@ -5,21 +5,19 @@ import (
 	"net/http"
 
 	"github.com/dunv/uauth"
-	"github.com/dunv/uauth/permissions"
-	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
 )
 
 var ListUsersHandler = uhttp.Handler{
 	AddMiddleware: uauth.AuthJWT(),
 	GetHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := uauth.User(r)
-		if !user.CheckPermission(permissions.CanReadUsers) {
-			uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", permissions.CanReadUsers))
+		user := uauth.UserFromRequest(r)
+		if !user.CheckPermission(uauth.CanReadUsers) {
+			uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", uauth.CanReadUsers))
 			return
 		}
 
-		userService := services.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
+		userService := uauth.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
 		usersFromDb, err := userService.List()
 
 		if err != nil {

@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/dunv/uauth/helpers"
 	"github.com/dunv/uhttp"
 	"github.com/dunv/ulog"
 )
@@ -50,7 +49,7 @@ func authHybridTestFixture() uhttp.Handler {
 			testUserModel{},
 		),
 		GetHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if testUser, ok := CustomUser(r).(*testUserModel); ok {
+			if testUser, ok := GenericUserFromRequest(r).(*testUserModel); ok {
 				uhttp.Render(w, r, authHybridResponseModel{
 					JWTUser:        testUser,
 					IsAuthBasic:    IsAuthBasic(r),
@@ -60,7 +59,7 @@ func authHybridTestFixture() uhttp.Handler {
 					IsAuth_jwt1Get: IsAuthMethod("jwt1Get", r),
 					IsAuth_jwt2Get: IsAuthMethod("jwt2Get", r),
 				})
-			} else if testUser, ok := CustomUser(r).(string); ok {
+			} else if testUser, ok := GenericUserFromRequest(r).(string); ok {
 				uhttp.Render(w, r, authHybridResponseModel{
 					BasicUser:      testUser,
 					IsAuthBasic:    IsAuthBasic(r),
@@ -143,13 +142,13 @@ func TestSuccessAuthHybridFirstSecret(t *testing.T) {
 	ts := httptest.NewServer(authHybridTestFixture().HandlerFunc())
 	defer ts.Close()
 
-	req := helpers.JWTRequestTest(
+	req := JWTRequestTest(
 		"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE1NjkzMDI5MDYsImV4cCI6NDEyNTM2MDUwNiwiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSIsIkdpdmVuTmFtZSI6IkpvaG5ueSIsIlN1cm5hbWUiOiJSb2NrZXQiLCJFbWFpbCI6Impyb2NrZXRAZXhhbXBsZS5jb20iLCJSb2xlIjpbIk1hbmFnZXIiLCJQcm9qZWN0IEFkbWluaXN0cmF0b3IiXX0.tsJ6DZ80BtMzEO0SejB3guyXIQ1cgioQSDYlxLWTJdk",
 		http.MethodGet,
 		ts.URL,
 		nil,
 	)
-	res := helpers.DoRequestTest(req)
+	res := DoRequestTest(req)
 
 	if res.StatusCode == http.StatusUnauthorized {
 		t.Errorf("did not allow access to handler")
@@ -169,13 +168,13 @@ func TestSuccessAuthHybridSecondSecret(t *testing.T) {
 	ts := httptest.NewServer(authHybridTestFixture().HandlerFunc())
 	defer ts.Close()
 
-	req := helpers.JWTRequestTest(
+	req := JWTRequestTest(
 		"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE1NjkzMDI5MDYsImV4cCI6NDEyNTM2MDUwNiwiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSIsIkdpdmVuTmFtZSI6IkpvaG5ueSIsIlN1cm5hbWUiOiJSb2NrZXQiLCJFbWFpbCI6Impyb2NrZXRAZXhhbXBsZS5jb20iLCJSb2xlIjpbIk1hbmFnZXIiLCJQcm9qZWN0IEFkbWluaXN0cmF0b3IiXX0.HJbowEi9q3YOKlsKftKsRYt0xwnK5DEm-2Nhff06N-8",
 		http.MethodGet,
 		ts.URL,
 		nil,
 	)
-	res := helpers.DoRequestTest(req)
+	res := DoRequestTest(req)
 
 	if res.StatusCode == http.StatusUnauthorized {
 		t.Errorf("did not allow access to handler")
@@ -195,13 +194,13 @@ func TestSuccessAuthHybridFirstSecretGet(t *testing.T) {
 	ts := httptest.NewServer(authHybridTestFixture().HandlerFunc())
 	defer ts.Close()
 
-	req := helpers.JWTRequestGetTest(
+	req := JWTRequestGetTest(
 		"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE1NjkzMDI5MDYsImV4cCI6NDEyNTM2MDUwNiwiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSIsIkdpdmVuTmFtZSI6IkpvaG5ueSIsIlN1cm5hbWUiOiJSb2NrZXQiLCJFbWFpbCI6Impyb2NrZXRAZXhhbXBsZS5jb20iLCJSb2xlIjpbIk1hbmFnZXIiLCJQcm9qZWN0IEFkbWluaXN0cmF0b3IiXX0.tsJ6DZ80BtMzEO0SejB3guyXIQ1cgioQSDYlxLWTJdk",
 		http.MethodGet,
 		ts.URL,
 		nil,
 	)
-	res := helpers.DoRequestTest(req)
+	res := DoRequestTest(req)
 
 	if res.StatusCode == http.StatusUnauthorized {
 		t.Errorf("did not allow access to handler")
@@ -221,13 +220,13 @@ func TestSuccessAuthHybridSecondSecretGet(t *testing.T) {
 	ts := httptest.NewServer(authHybridTestFixture().HandlerFunc())
 	defer ts.Close()
 
-	req := helpers.JWTRequestGetTest(
+	req := JWTRequestGetTest(
 		"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE1NjkzMDI5MDYsImV4cCI6NDEyNTM2MDUwNiwiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSIsIkdpdmVuTmFtZSI6IkpvaG5ueSIsIlN1cm5hbWUiOiJSb2NrZXQiLCJFbWFpbCI6Impyb2NrZXRAZXhhbXBsZS5jb20iLCJSb2xlIjpbIk1hbmFnZXIiLCJQcm9qZWN0IEFkbWluaXN0cmF0b3IiXX0.HJbowEi9q3YOKlsKftKsRYt0xwnK5DEm-2Nhff06N-8",
 		http.MethodGet,
 		ts.URL,
 		nil,
 	)
-	res := helpers.DoRequestTest(req)
+	res := DoRequestTest(req)
 
 	if res.StatusCode == http.StatusUnauthorized {
 		t.Errorf("did not allow access to handler")
@@ -247,13 +246,13 @@ func TestFailureAuthHybridJWT(t *testing.T) {
 	ts := httptest.NewServer(authHybridTestFixture().HandlerFunc())
 	defer ts.Close()
 
-	req := helpers.JWTRequestTest(
+	req := JWTRequestTest(
 		"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE1NjkzMDI5MDYsImV4cCI6NDEyNTM2MDUwNiwiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSIsIkdpdmuTmFtZSI6IkpvaG5ueSIsIlN1cm5hbWUiOiJSb2NrZXQiLCJFbWFpbCI6Impyb2NrZXRAZXhhbXBsZS5jb20iLCJSb2xlIjpbIk1hbmFnZXIiLCJQcm9qZWN0IEFkbWluaXN0cmF0b3IiXX0.HJbowEi9q3YOKlsKftKsRYt0xwnK5DEm-2Nhff06N-8",
 		http.MethodGet,
 		ts.URL,
 		nil,
 	)
-	res := helpers.DoRequestTest(req)
+	res := DoRequestTest(req)
 
 	if res.StatusCode != http.StatusUnauthorized {
 		t.Errorf("did allow access to handler")
@@ -264,8 +263,8 @@ func TestFailureAuthHybridJWT(t *testing.T) {
 func TestSuccessAuthHybridBasicUser1(t *testing.T) {
 	ts := httptest.NewServer(authHybridTestFixture().HandlerFunc())
 	defer ts.Close()
-	req := helpers.AuthBasicRequestTest("testUser", "testPassword", http.MethodGet, ts.URL, nil)
-	res := helpers.DoRequestTest(req)
+	req := AuthBasicRequestTest("testUser", "testPassword", http.MethodGet, ts.URL, nil)
+	res := DoRequestTest(req)
 	if res.StatusCode == http.StatusUnauthorized {
 		t.Errorf("did not allow access to handler")
 	}
@@ -283,8 +282,8 @@ func TestSuccessAuthHybridBasicUser1(t *testing.T) {
 func TestSuccessAuthHybridBasicUser2(t *testing.T) {
 	ts := httptest.NewServer(authHybridTestFixture().HandlerFunc())
 	defer ts.Close()
-	req := helpers.AuthBasicRequestTest("testUser2", "testPassword", http.MethodGet, ts.URL, nil)
-	res := helpers.DoRequestTest(req)
+	req := AuthBasicRequestTest("testUser2", "testPassword", http.MethodGet, ts.URL, nil)
+	res := DoRequestTest(req)
 	if res.StatusCode == http.StatusUnauthorized {
 		t.Errorf("did not allow access to handler")
 	}
@@ -302,8 +301,8 @@ func TestSuccessAuthHybridBasicUser2(t *testing.T) {
 func TestFailureAuthHybridBasic(t *testing.T) {
 	ts := httptest.NewServer(authBasicFixture().HandlerFunc())
 	defer ts.Close()
-	req := helpers.AuthBasicRequestTest("testUser1", "testPassword", http.MethodGet, ts.URL, nil)
-	res := helpers.DoRequestTest(req)
+	req := AuthBasicRequestTest("testUser1", "testPassword", http.MethodGet, ts.URL, nil)
+	res := DoRequestTest(req)
 	if res.StatusCode != http.StatusUnauthorized {
 		t.Errorf("did allow access to handler")
 	}

@@ -1,13 +1,13 @@
-package services
+package uauth
 
 import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
 
-	"github.com/dunv/uauth/models"
-	"github.com/dunv/uauth/permissions"
+	"github.com/dunv/uhelpers"
 	"github.com/dunv/ulog"
+	"golang.org/x/crypto/bcrypt"
 
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -26,13 +26,13 @@ func CreateInitialRolesIfNotExist(s *mongo.Client, dbName string) error {
 
 	if len(*allRoles) == 0 {
 		ulog.Infof("Creating initial roles (auth)...")
-		roles := []models.Role{models.Role{
+		roles := []Role{Role{
 			Name: adminRoleName,
-			Permissions: []permissions.Permission{
-				permissions.CanReadUsers,
-				permissions.CanCreateUsers,
-				permissions.CanUpdateUsers,
-				permissions.CanDeleteUsers,
+			Permissions: []Permission{
+				CanReadUsers,
+				CanCreateUsers,
+				CanUpdateUsers,
+				CanDeleteUsers,
 			},
 		}}
 		for _, role := range roles {
@@ -60,7 +60,7 @@ func CreateInitialUsersIfNotExist(s *mongo.Client, dbName string) error {
 	if len(*allUsers) == 0 {
 		ulog.Info("Creating initial users (auth)...")
 		roleList := []string{adminRoleName}
-		users := []models.User{models.User{
+		users := []User{User{
 			FirstName: "Default",
 			LastName:  "Admin",
 			UserName:  "admin",
@@ -68,8 +68,11 @@ func CreateInitialUsersIfNotExist(s *mongo.Client, dbName string) error {
 		}}
 		for _, user := range users {
 			pw := randStr(15)
-			hashedPassword, _ := user.HashPassword(pw)
-			user.Password = &hashedPassword
+			hashedPassword, err := bcrypt.GenerateFromPassword([]byte(pw), 12)
+			if err != nil {
+				return fmt.Errorf("could not create user %s (%s)", user.UserName, err)
+			}
+			user.Password = uhelpers.PtrToString(string(hashedPassword))
 			ulog.Infof("user: %s, pw: %s", user.UserName, pw)
 			err = userService.CreateUser(&user)
 			if err != nil {
@@ -81,14 +84,14 @@ func CreateInitialUsersIfNotExist(s *mongo.Client, dbName string) error {
 	return nil
 }
 
-func CreateCustomRolesIfNotExist(s *mongo.Client, dbName string, wantedRoles []models.Role, identifier string) error {
+func CreateCustomRolesIfNotExist(s *mongo.Client, dbName string, wantedRoles []Role, identifier string) error {
 	roleService := NewRoleService(s, dbName)
 	allRoles, err := roleService.List()
 	if err != nil {
 		return fmt.Errorf("Error loading roles")
 	}
 
-	missingRoles := []models.Role{}
+	missingRoles := []Role{}
 	found := false
 	for _, wantedRole := range wantedRoles {
 		found = false

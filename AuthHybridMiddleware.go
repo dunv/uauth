@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/dunv/uauth/helpers"
 	"github.com/dunv/uhttp"
 	"github.com/dunv/ulog"
 )
@@ -21,9 +20,9 @@ func AuthHybrid(
 		return func(w http.ResponseWriter, r *http.Request) {
 			// try all secrets in Headers
 			for name, secret := range jwtSecrets {
-				user, err := helpers.GetCustomUserFromRequestHeaders(r, secret, userModel)
+				user, err := GetCustomUserFromRequestHeaders(r, secret, userModel)
 				if err == nil {
-					ctx := context.WithValue(r.Context(), CtxKeyCustomUser, user)
+					ctx := context.WithValue(r.Context(), CtxKeyUser, user)
 					ctx = context.WithValue(ctx, CtxKeyAuthMethod, name)
 					ulog.LogIfError(uhttp.AddLogOutput(w, "authMethod", name))
 					next.ServeHTTP(w, r.WithContext(ctx))
@@ -33,9 +32,9 @@ func AuthHybrid(
 
 			// try all secrets in getparam
 			for name, secret := range jwtSecrets {
-				user, err := helpers.GetCustomUserFromRequestGetParams(r, secret, userModel)
+				user, err := GetCustomUserFromRequestGetParams(r, secret, userModel)
 				if err == nil {
-					ctx := context.WithValue(r.Context(), CtxKeyCustomUser, user)
+					ctx := context.WithValue(r.Context(), CtxKeyUser, user)
 					ctx = context.WithValue(ctx, CtxKeyAuthMethod, fmt.Sprintf("%sGet", name))
 					ulog.LogIfError(uhttp.AddLogOutput(w, "authMethod", fmt.Sprintf("%sGet", name)))
 					next.ServeHTTP(w, r.WithContext(ctx))
@@ -49,7 +48,7 @@ func AuthHybrid(
 			if ok {
 				for allowedUser, allowedPasswordMd5 := range authBasicCredentials {
 					if requestUser == allowedUser && requestPasswordMd5 == allowedPasswordMd5 {
-						ctx := context.WithValue(r.Context(), CtxKeyCustomUser, allowedUser)
+						ctx := context.WithValue(r.Context(), CtxKeyUser, allowedUser)
 						ctx = context.WithValue(ctx, CtxKeyAuthMethod, "basic")
 						ulog.LogIfError(uhttp.AddLogOutput(w, "authMethod", "basic"))
 						ulog.LogIfError(uhttp.AddLogOutput(w, "user", allowedUser))

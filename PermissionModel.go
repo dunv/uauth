@@ -1,4 +1,4 @@
-package permissions
+package uauth
 
 // Permission type
 type Permission string
@@ -13,3 +13,7 @@ const (
 	// CanDeleteUsers Permission for deleting users
 	CanDeleteUsers Permission = "canDeleteUsers"
 )
+
+func PtrToPermission(p Permission) *Permission {
+	return &p
+}

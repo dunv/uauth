@@ -1,13 +1,13 @@
 package uauth
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
-	"github.com/dunv/uauth/config"
-	"github.com/dunv/uauth/models"
-	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
 	"github.com/dunv/ulog"
+	"github.com/dunv/umongo"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -15,26 +15,31 @@ import (
 // TODO: expose authGet, Basic, JWT with custom usermodels as "helpers"
 // TODO: add logging lib-config
 
-var packageConfig config.Config
+var packageConfig Config
 
-func SetConfig(_config config.Config) error {
+func SetConfig(_config Config) error {
 	packageConfig = _config
-	models.AdditionalAttributesModel = _config.AdditionalUserAttributes
+	AdditionalAttributesModel = _config.AdditionalUserAttributes
 
-	uhttp.AddContext(CtxKeyUserDbClient, _config.UserDbClient)
+	mongoClient, _, err := umongo.NewDbClient(_config.UserDbConnectionString, time.Second)
+	if err != nil {
+		return fmt.Errorf("Could not connect to db. Exiting (%v)", err)
+	}
+
+	uhttp.AddContext(CtxKeyUserDbClient, mongoClient)
+	uhttp.AddContext(CtxKeyConfig, _config)
 	uhttp.AddContext(CtxKeyUserDbName, _config.UserDbName)
-	uhttp.AddContext(CtxKeyBCryptSecret, _config.BCryptSecret)
 
-	if err := services.CreateInitialRolesIfNotExist(_config.UserDbClient, _config.UserDbName); err != nil {
+	if err := CreateInitialRolesIfNotExist(mongoClient, _config.UserDbName); err != nil {
 		return err
 	}
 
-	if err := services.CreateInitialUsersIfNotExist(_config.UserDbClient, _config.UserDbName); err != nil {
+	if err := CreateInitialUsersIfNotExist(mongoClient, _config.UserDbName); err != nil {
 		return err
 	}
 
 	if len(_config.WantedRoles) > 0 {
-		err := services.CreateCustomRolesIfNotExist(_config.UserDbClient, _config.UserDbName, _config.WantedRoles, _config.TokenIssuer)
+		err := CreateCustomRolesIfNotExist(mongoClient, _config.UserDbName, _config.WantedRoles, _config.TokenIssuer)
 		if err != nil {
 			return err
 		}
@@ -43,16 +48,16 @@ func SetConfig(_config config.Config) error {
 	return nil
 }
 
-func Config() config.Config {
-	return packageConfig
-}
-
-func User(r *http.Request) models.User {
-	if user, ok := r.Context().Value(CtxKeyUser).(models.User); ok {
+func UserFromRequest(r *http.Request) User {
+	if user, ok := r.Context().Value(CtxKeyUser).(User); ok {
 		return user
 	}
 	ulog.Errorf("could not find user in request context")
-	return models.User{}
+	return User{}
+}
+
+func GenericUserFromRequest(r *http.Request) interface{} {
+	return r.Context().Value(CtxKeyUser)
 }
 
 func UserDB(r *http.Request) *mongo.Client {
@@ -71,22 +76,6 @@ func UserDBName(r *http.Request) string {
 	return ""
 }
 
-func BCryptSecret(r *http.Request) string {
-	if bCryptSecret, ok := r.Context().Value(CtxKeyBCryptSecret).(string); ok {
-		return bCryptSecret
-	}
-	ulog.Errorf("could not find userDbName in request context")
-	return ""
-}
-
-func CustomUser(r *http.Request) interface{} {
-	if r.Context().Value(CtxKeyCustomUser) != nil {
-		return r.Context().Value(CtxKeyCustomUser)
-	}
-	ulog.Errorf("could not find customUser in request context")
-	return nil
-}
-
 func IsAuthBasic(r *http.Request) bool {
 	return IsAuthMethod("basic", r)
 }
@@ -100,4 +89,13 @@ func IsAuthMethod(authMethod string, r *http.Request) bool {
 		return true
 	}
 	return false
+}
+
+func ConfigFromRequest(r *http.Request) Config {
+	if r.Context().Value(CtxKeyConfig) != nil {
+		return r.Context().Value(CtxKeyConfig).(Config)
+	}
+	ulog.Panic("could not find config in request context")
+	// this will never be reached
+	return Config{}
 }

@@ -5,29 +5,26 @@ import (
 	"net/http"
 
 	"github.com/dunv/uauth"
-	"github.com/dunv/uauth/models"
-	"github.com/dunv/uauth/permissions"
-	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
 )
 
 type rolesGetResponse struct {
-	Roles   *[]models.Role `json:"roles"`
-	Success bool           `json:"success"`
+	Roles   *[]uauth.Role `json:"roles"`
+	Success bool          `json:"success"`
 }
 
 // RolesGetHandler for getting days for the logged in user
 var GetRolesHandler = uhttp.Handler{
 	AddMiddleware: uauth.AuthJWT(),
 	GetHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := uauth.User(r)
-		if !user.CheckPermission(permissions.CanReadUsers) {
-			uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", permissions.CanReadUsers))
+		user := uauth.UserFromRequest(r)
+		if !user.CheckPermission(uauth.CanReadUsers) {
+			uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", uauth.CanReadUsers))
 			return
 		}
 
 		// Get Roles
-		rolesService := services.NewRoleService(uauth.UserDB(r), uauth.UserDBName(r))
+		rolesService := uauth.NewRoleService(uauth.UserDB(r), uauth.UserDBName(r))
 		roles, err := rolesService.GetMultipleByName(*user.Roles)
 
 		// Check error

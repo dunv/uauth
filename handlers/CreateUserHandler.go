@@ -6,11 +6,9 @@ import (
 	"net/http"
 
 	"github.com/dunv/uauth"
-	"github.com/dunv/uauth/helpers"
-	"github.com/dunv/uauth/models"
-	"github.com/dunv/uauth/permissions"
-	"github.com/dunv/uauth/services"
+	"github.com/dunv/uhelpers"
 	"github.com/dunv/uhttp"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type createUserModel struct {
@@ -25,9 +23,9 @@ type createUserModel struct {
 var CreateUserHandler = uhttp.Handler{
 	AddMiddleware: uauth.AuthJWT(),
 	PostHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := uauth.User(r)
-		if !user.CheckPermission(permissions.CanCreateUsers) {
-			uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", permissions.CanCreateUsers))
+		user := uauth.UserFromRequest(r)
+		if !user.CheckPermission(uauth.CanCreateUsers) {
+			uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", uauth.CanCreateUsers))
 			return
 		}
 
@@ -41,7 +39,7 @@ var CreateUserHandler = uhttp.Handler{
 		}
 
 		// Verify all roles exist
-		roleService := services.NewRoleService(uauth.UserDB(r), uauth.UserDBName(r))
+		roleService := uauth.NewRoleService(uauth.UserDB(r), uauth.UserDBName(r))
 		allRoles, err := roleService.List()
 		if err != nil {
 			uhttp.RenderError(w, r, err)
@@ -62,18 +60,18 @@ var CreateUserHandler = uhttp.Handler{
 			return
 		}
 
-		hashedPassword, _ := helpers.HashPassword(userFromRequest.Password)
+		hashedPasswordBytes, err := bcrypt.GenerateFromPassword([]byte(userFromRequest.Password), 12)
 		if err != nil {
 			uhttp.RenderError(w, r, err)
 			return
 		}
 
-		userService := services.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
-		userToBeCreated := models.User{
+		userService := uauth.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
+		userToBeCreated := uauth.User{
 			UserName:  userFromRequest.UserName,
 			FirstName: userFromRequest.FirstName,
 			LastName:  userFromRequest.LastName,
-			Password:  &hashedPassword,
+			Password:  uhelpers.PtrToString(string(hashedPasswordBytes)),
 			Roles:     &verifiedRoles,
 		}
 		err = userService.CreateUser(&userToBeCreated)

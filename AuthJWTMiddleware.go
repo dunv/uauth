@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dunv/uauth/helpers"
 	"github.com/dunv/uhttp"
 	"github.com/dunv/ulog"
 )
@@ -16,11 +15,11 @@ import (
 func AuthJWT() *uhttp.Middleware {
 	tmp := uhttp.Middleware(func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
-			if packageConfig.UserDbName == "" || packageConfig.UserDbClient == nil || packageConfig.BCryptSecret == "" {
+			if packageConfig.UserDbName == "" || packageConfig.UserDbConnectionString == "" || packageConfig.BCryptSecret == "" {
 				ulog.Panic("uauth packageConfig has not been set, unable to use AuthJWT()", packageConfig)
 			}
 
-			user, err := helpers.GetUserFromRequestHeaders(r, BCryptSecret(r))
+			user, err := GetUserFromRequestHeaders(r)
 			if err != nil {
 				ulog.Infof("Denying access (%s)", err)
 				uhttp.RenderError(w, r, fmt.Errorf("Unauthorized"))

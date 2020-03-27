@@ -7,7 +7,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/dunv/uauth/helpers"
 	"github.com/dunv/uhttp"
 	"github.com/dunv/ulog"
 )
@@ -37,8 +36,8 @@ func TestFailingAuthBasic(t *testing.T) {
 func TestSuccessAuthBasic(t *testing.T) {
 	ts := httptest.NewServer(authBasicFixture().HandlerFunc())
 	defer ts.Close()
-	req := helpers.AuthBasicRequestTest("testUser", "testPassword", http.MethodGet, ts.URL, nil)
-	res := helpers.DoRequestTest(req)
+	req := AuthBasicRequestTest("testUser", "testPassword", http.MethodGet, ts.URL, nil)
+	res := DoRequestTest(req)
 	if res.StatusCode == http.StatusUnauthorized {
 		t.Errorf("did not allow access to handler")
 	}

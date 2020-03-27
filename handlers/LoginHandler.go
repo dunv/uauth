@@ -4,30 +4,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
-	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/dunv/uauth"
-	"github.com/dunv/uauth/models"
-	"github.com/dunv/uauth/services"
 	"github.com/dunv/uhttp"
 )
-
-type loginRequest struct {
-	User models.User `json:"user"`
-}
-
-type loginResponse struct {
-	User    models.User           `json:"user"`
-	JWTUser models.UserWithClaims `json:"DO_NOT_USE_jwtUser"`
-	JWT     string                `json:"jwt"`
-}
 
 // LoginHandler handler for getting JSON web token
 var LoginHandler = uhttp.Handler{
 	PostHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		config := uauth.ConfigFromRequest(r)
+
 		// Parse request
-		loginRequest := loginRequest{}
+		type loginRequestModel struct {
+			User uauth.User `json:"user"`
+		}
+		loginRequest := loginRequestModel{}
 		err := json.NewDecoder(r.Body).Decode(&loginRequest)
 		defer r.Body.Close()
 		if err != nil {
@@ -35,61 +26,49 @@ var LoginHandler = uhttp.Handler{
 			return
 		}
 
-		userService := services.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
-		userFromDb, err := userService.GetByUserName(loginRequest.User.UserName)
-
 		// Verify user with password
-		if err != nil || !(*userFromDb).CheckPassword(*loginRequest.User.Password) {
+		userService := uauth.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
+		dbUser, err := userService.GetByUserName(loginRequest.User.UserName)
+		if err != nil || !(*dbUser).CheckPassword(*loginRequest.User.Password) {
 			if err == nil {
 				err = fmt.Errorf("nil")
 			}
-			uhttp.RenderError(w, r, fmt.Errorf("No user with this name/password exists (%s)", err))
+			uhttp.RenderWithStatusCode(w, r, http.StatusUnauthorized, uauth.MachineError(uauth.ErrInvalidUser, fmt.Errorf("No user with this name/password exists (%s)", err)))
 			return
 		}
 
-		// Get Roles
-		rolesService := services.NewRoleService(uauth.UserDB(r), uauth.UserDBName(r))
-		roles, err := rolesService.GetMultipleByName(*userFromDb.Roles)
-
-		// Check error
+		// Resolve roles into permissions
+		rolesService := uauth.NewRoleService(uauth.UserDB(r), uauth.UserDBName(r))
+		roleDict, err := rolesService.GetMultipleByName(*dbUser.Roles)
+		if err != nil {
+			uhttp.RenderError(w, r, err)
+			return
+		}
+		uiUser, err := dbUser.CleanForUI(roleDict)
 		if err != nil {
 			uhttp.RenderError(w, r, err)
 			return
 		}
 
-		permissions := models.MergeToPermissions(*roles)
-
-		// Create jwt-token with the username set
-		var userWithClaims = (*userFromDb).ToUserWithClaims()
-		err = userWithClaims.UnmarshalAdditionalAttributes()
-		if err != nil {
-			uhttp.RenderError(w, r, fmt.Errorf("Could not unmarshal additonalAttributes (%s)", err))
-			return
-		}
-		userWithClaims.IssuedAt = int64(time.Now().Unix())
-		usedIssuer := uauth.Config().TokenIssuer
-		userWithClaims.Issuer = usedIssuer
-		userWithClaims.ExpiresAt = int64(time.Now().Unix() + 604800)
-		userWithClaims.Permissions = &permissions
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, userWithClaims)
-
-		bCryptSecret := uauth.BCryptSecret(r)
-		signedToken, err := token.SignedString([]byte(bCryptSecret))
+		// Create accessToken
+		signedAccessToken, err := uauth.GenerateAccessToken(uiUser, userService, config, r.Context())
 		if err != nil {
 			uhttp.RenderError(w, r, err)
+			return
 		}
 
-		// Add rolesDetails to user-model
-		(*userFromDb).Permissions = &permissions
-
-		// Clean
-		(*userFromDb).Password = nil
+		// Create refreshToken
+		signedRefreshToken, err := uauth.GenerateRefreshToken(uiUser.UserName, userService, config, r.Context())
+		if err != nil {
+			uhttp.RenderError(w, r, err)
+			return
+		}
 
 		// Render response
-		uhttp.Render(w, r, loginResponse{
-			User:    *userFromDb,
-			JWTUser: userWithClaims,
-			JWT:     signedToken,
+		uhttp.Render(w, r, map[string]interface{}{
+			"user":         uiUser,
+			"accessToken":  signedAccessToken,
+			"refreshToken": signedRefreshToken,
 		})
 	}),
 }
