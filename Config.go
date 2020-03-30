@@ -15,9 +15,6 @@ type Config struct {
 	// Name of the token issue when tokens are created
 	TokenIssuer string
 
-	// These attributes can be saved and retrieved in the user document
-	AdditionalUserAttributes AdditionalUserAttributesInterface
-
 	// Which roles should the package create for you
 	WantedRoles []Role
 

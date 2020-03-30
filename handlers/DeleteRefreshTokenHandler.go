@@ -17,10 +17,14 @@ var DeleteRefreshTokenHandler = uhttp.Handler{
 	PostModel:     deleteRefreshTokenRequest{},
 	PostHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		userService := uauth.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
-		user := uauth.UserFromRequest(r)
+		user, err := uauth.UserFromRequest(r)
+		if err != nil {
+			uhttp.RenderError(w, r, err)
+			return
+		}
 		tokenModel := uhttp.ParsedModel(r).(*deleteRefreshTokenRequest)
 
-		err := userService.RemoveRefreshToken(user.UserName, tokenModel.RefreshToken, r.Context())
+		err = userService.RemoveRefreshToken(user.UserName, tokenModel.RefreshToken, r.Context())
 		if err != nil {
 			uhttp.RenderError(w, r, fmt.Errorf("could not delete refreshToken (%s)", err))
 			return

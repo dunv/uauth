@@ -11,6 +11,11 @@ import (
 	"github.com/dunv/ulog"
 )
 
+type additional struct {
+	UserAttr1 int      `bson:"userAttr1" json:"userAttr1"`
+	UserAttr2 []string `bson:"userAttr2" json:"userAttr2"`
+}
+
 func main() {
 	ulog.SetLogLevel(ulog.LEVEL_TRACE)
 
@@ -34,7 +39,14 @@ func main() {
 	uhttp.Handle("/withAuthorization", uhttp.Handler{
 		AddMiddleware: uauth.AuthJWT(),
 		GetHandler: func(w http.ResponseWriter, r *http.Request) {
-			uhttp.Render(w, r, map[string]string{"auth": "withAuthorization"})
+			additionalAttrs := additional{}
+			_, err := uauth.UserFromRequest(r, &additionalAttrs)
+			if err != nil {
+				uhttp.RenderError(w, r, err)
+				return
+			}
+
+			uhttp.Render(w, r, map[string]interface{}{"auth": "withAuthorization", "additionalAttrs": additionalAttrs})
 		},
 	})
 

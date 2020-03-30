@@ -23,7 +23,11 @@ type createUserModel struct {
 var CreateUserHandler = uhttp.Handler{
 	AddMiddleware: uauth.AuthJWT(),
 	PostHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := uauth.UserFromRequest(r)
+		user, err := uauth.UserFromRequest(r)
+		if err != nil {
+			uhttp.RenderError(w, r, err)
+			return
+		}
 		if !user.CheckPermission(uauth.CanCreateUsers) {
 			uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", uauth.CanCreateUsers))
 			return
@@ -31,7 +35,7 @@ var CreateUserHandler = uhttp.Handler{
 
 		// Parse requestedUserModel
 		var userFromRequest createUserModel
-		err := json.NewDecoder(r.Body).Decode(&userFromRequest)
+		err = json.NewDecoder(r.Body).Decode(&userFromRequest)
 		defer r.Body.Close()
 		if err != nil {
 			uhttp.RenderError(w, r, err)

@@ -1,6 +1,8 @@
 package uauth
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -19,7 +21,6 @@ var packageConfig Config
 
 func SetConfig(_config Config) error {
 	packageConfig = _config
-	AdditionalAttributesModel = _config.AdditionalUserAttributes
 
 	mongoClient, _, err := umongo.NewDbClient(_config.UserDbConnectionString, time.Second)
 	if err != nil {
@@ -48,12 +49,27 @@ func SetConfig(_config Config) error {
 	return nil
 }
 
-func UserFromRequest(r *http.Request) User {
-	if user, ok := r.Context().Value(CtxKeyUser).(User); ok {
-		return user
+func UserFromRequest(r *http.Request, additionalAttributes ...interface{}) (*User, error) {
+	var user User
+	var ok bool
+	if user, ok = r.Context().Value(CtxKeyUser).(User); !ok {
+		return nil, errors.New("could not find user in request context")
 	}
-	ulog.Errorf("could not find user in request context")
-	return User{}
+
+	if len(additionalAttributes) == 1 {
+		bytes, err := json.Marshal(user.AdditionalAttributes)
+		if err != nil {
+			return nil, fmt.Errorf("could not marshal additionalAttributes (%s)", err)
+		}
+
+		err = json.Unmarshal(bytes, additionalAttributes[0])
+		if err != nil {
+			return nil, fmt.Errorf("could not unmarshal additionalAttributes (%s)", err)
+		}
+	}
+
+	return &user, nil
+
 }
 
 func GenericUserFromRequest(r *http.Request) interface{} {

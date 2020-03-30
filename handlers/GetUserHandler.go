@@ -16,7 +16,11 @@ var GetUserHandler = uhttp.Handler{
 		"userId": uhttp.STRING,
 	},
 	GetHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := uauth.UserFromRequest(r)
+		user, err := uauth.UserFromRequest(r)
+		if err != nil {
+			uhttp.RenderError(w, r, err)
+			return
+		}
 		if !user.CheckPermission(uauth.CanReadUsers) {
 			uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", uauth.CanReadUsers))
 			return

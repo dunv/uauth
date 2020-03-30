@@ -37,10 +37,6 @@ func (s *UserService) GetByUserName(userName string) (*User, error) {
 	if err := res.Decode(user); err != nil {
 		return nil, fmt.Errorf("Could not decode (%s)", err)
 	}
-	err := user.UnmarshalAdditionalAttributes()
-	if err != nil {
-		return nil, fmt.Errorf("Could not marshal additional attributes (%s)", err)
-	}
 	return user, nil
 }
 
@@ -92,10 +88,6 @@ func (s *UserService) Get(ID primitive.ObjectID) (*User, error) {
 	if err := res.Decode(user); err != nil {
 		return nil, err
 	}
-	err := user.UnmarshalAdditionalAttributes()
-	if err != nil {
-		return nil, fmt.Errorf("Could not marshal additional attributes (%s)", err)
-	}
 	return user, nil
 }
 
@@ -138,10 +130,6 @@ func cursorToUsers(cur *mongo.Cursor, err error) (*[]User, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error marshalling decoding (%s)", err)
 		}
-		err = result.UnmarshalAdditionalAttributes()
-		if err != nil {
-			return nil, fmt.Errorf("error marshalling additional attributes (%s)", err)
-		}
 		results = append(results, result)
 	}
 	if err := cur.Err(); err != nil {
@@ -150,7 +138,7 @@ func cursorToUsers(cur *mongo.Cursor, err error) (*[]User, error) {
 	return &results, nil
 }
 
-func (s *UserService) UpdateAdditionalAttributes(userName string, additionalAttributes AdditionalUserAttributesInterface) error {
+func (s *UserService) UpdateAdditionalAttributes(userName string, additionalAttributes interface{}) error {
 	res := s.Collection.FindOneAndUpdate(
 		context.Background(),
 		bson.M{"userName": userName},

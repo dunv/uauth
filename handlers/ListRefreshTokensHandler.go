@@ -12,7 +12,11 @@ var ListRefreshTokensHandler = uhttp.Handler{
 	AddMiddleware: uauth.AuthJWT(),
 	GetHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		userService := uauth.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
-		user := uauth.UserFromRequest(r)
+		user, err := uauth.UserFromRequest(r)
+		if err != nil {
+			uhttp.RenderError(w, r, err)
+			return
+		}
 
 		tokens, err := userService.ListRefreshTokens(user.UserName, r.Context())
 		if err != nil {

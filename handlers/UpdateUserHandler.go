@@ -14,7 +14,11 @@ import (
 var UpdateUserHandler = uhttp.Handler{
 	AddMiddleware: uauth.AuthJWT(),
 	PostHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := uauth.UserFromRequest(r)
+		user, err := uauth.UserFromRequest(r)
+		if err != nil {
+			uhttp.RenderError(w, r, err)
+			return
+		}
 		if !user.CheckPermission(uauth.CanUpdateUsers) {
 			uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", uauth.CanUpdateUsers))
 			return
@@ -22,7 +26,7 @@ var UpdateUserHandler = uhttp.Handler{
 
 		// Parse requestedUserModel
 		var userFromRequest uauth.User
-		err := json.NewDecoder(r.Body).Decode(&userFromRequest)
+		err = json.NewDecoder(r.Body).Decode(&userFromRequest)
 		defer r.Body.Close()
 		if err != nil {
 			uhttp.RenderError(w, r, err)
