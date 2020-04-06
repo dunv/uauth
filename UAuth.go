@@ -1,6 +1,7 @@
 package uauth
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -49,14 +50,14 @@ func SetConfig(_config Config) error {
 	return nil
 }
 
-func UserFromRequest(r *http.Request, additionalAttributes ...interface{}) (*User, error) {
+func UserFromContext(ctx context.Context, additionalAttributes ...interface{}) (*User, error) {
 	var user User
 	var ok bool
-	if user, ok = r.Context().Value(CtxKeyUser).(User); !ok {
+	if user, ok = ctx.Value(CtxKeyUser).(User); !ok {
 		return nil, errors.New("could not find user in request context")
 	}
 
-	if len(additionalAttributes) == 1 {
+	if len(additionalAttributes) == 1 && additionalAttributes[0] != nil {
 		bytes, err := json.Marshal(user.AdditionalAttributes)
 		if err != nil {
 			return nil, fmt.Errorf("could not marshal additionalAttributes (%s)", err)
@@ -70,6 +71,10 @@ func UserFromRequest(r *http.Request, additionalAttributes ...interface{}) (*Use
 
 	return &user, nil
 
+}
+
+func UserFromRequest(r *http.Request, additionalAttributes ...interface{}) (*User, error) {
+	return UserFromContext(r.Context(), additionalAttributes...)
 }
 
 func GenericUserFromRequest(r *http.Request) interface{} {
