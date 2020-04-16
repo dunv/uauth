@@ -3,18 +3,30 @@ package uauth
 import (
 	"context"
 
+	"github.com/dunv/uhelpers"
+	"github.com/dunv/umongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type RoleService struct {
-	Collection *mongo.Collection
+	umongo.ModelService
 }
 
 // NewRoleService for creating a RoleService
 func NewRoleService(db *mongo.Client, dbName string) *RoleService {
 	return &RoleService{
-		Collection: db.Database(dbName).Collection("roles"),
+		ModelService: umongo.NewModelService(db, dbName, "roles", []mongo.IndexModel{
+			{
+				Keys: bson.M{"name": 1},
+				Options: &options.IndexOptions{
+					Name:       uhelpers.PtrToString("name_1"),
+					Background: uhelpers.PtrToBool(true),
+					Unique:     uhelpers.PtrToBool(true),
+				},
+			},
+		}),
 	}
 }
 
@@ -24,17 +36,17 @@ func (s *RoleService) GetMultipleByName(roleNames []string) (*[]Role, error) {
 	for _, roleName := range roleNames {
 		queryParts = append(queryParts, bson.M{"name": roleName})
 	}
-	return cursorToRoles(s.Collection.Find(context.Background(), bson.D{{Key: "$or", Value: queryParts}}))
+	return cursorToRoles(s.Col.Find(context.Background(), bson.M{"$or": queryParts}))
 }
 
 // GetAllRoles from mongoDB
 func (s *RoleService) List() (*[]Role, error) {
-	return cursorToRoles(s.Collection.Find(context.Background(), bson.D{}))
+	return cursorToRoles(s.Col.Find(context.Background(), bson.D{}))
 }
 
 // CreateRole creates a user in the db
 func (s *RoleService) CreateRole(role *Role) error {
-	_, err := s.Collection.InsertOne(context.Background(), role)
+	_, err := s.Col.InsertOne(context.Background(), role)
 	return err
 }
 

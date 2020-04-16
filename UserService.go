@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/dunv/uhelpers"
+	"github.com/dunv/umongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -12,13 +14,30 @@ import (
 
 // UserService datastructure
 type UserService struct {
-	Collection *mongo.Collection
+	umongo.ModelService
 }
 
 // NewUserService for creating a UserService
 func NewUserService(db *mongo.Client, dbName string) *UserService {
 	return &UserService{
-		Collection: db.Database(dbName).Collection("users"),
+		ModelService: umongo.NewModelService(db, dbName, "users", []mongo.IndexModel{
+			{
+				Keys: bson.M{"userName": 1},
+				Options: &options.IndexOptions{
+					Name:       uhelpers.PtrToString("userName_1"),
+					Background: uhelpers.PtrToBool(true),
+					Unique:     uhelpers.PtrToBool(true),
+				},
+			},
+			{
+				Keys: bson.M{"userName": 1, "refreshTokens": 1},
+				Options: &options.IndexOptions{
+					Name:       uhelpers.PtrToString("userName_refreshTokens_1"),
+					Background: uhelpers.PtrToBool(true),
+					Unique:     uhelpers.PtrToBool(true),
+				},
+			},
+		}),
 	}
 }
 
@@ -26,14 +45,14 @@ func NewUserService(db *mongo.Client, dbName string) *UserService {
 func (s *UserService) CreateUser(user *User) error {
 	newObjectID := primitive.NewObjectID()
 	user.ID = &newObjectID
-	_, err := s.Collection.InsertOne(context.Background(), user)
+	_, err := s.Col.InsertOne(context.Background(), user)
 	return err
 }
 
 // GetByUserName from mongoDB
 func (s *UserService) GetByUserName(userName string) (*User, error) {
 	user := &User{}
-	res := s.Collection.FindOne(context.Background(), bson.M{"userName": userName})
+	res := s.Col.FindOne(context.Background(), bson.M{"userName": userName})
 	if err := res.Decode(user); err != nil {
 		return nil, fmt.Errorf("Could not decode (%s)", err)
 	}
@@ -41,7 +60,7 @@ func (s *UserService) GetByUserName(userName string) (*User, error) {
 }
 
 func (s *UserService) AddRefreshToken(userName string, refreshToken string, ctx context.Context) error {
-	_, err := s.Collection.UpdateOne(ctx,
+	_, err := s.Col.UpdateOne(ctx,
 		bson.M{"userName": userName},
 		bson.M{"$push": bson.M{"refreshTokens": refreshToken}},
 	)
@@ -49,7 +68,7 @@ func (s *UserService) AddRefreshToken(userName string, refreshToken string, ctx 
 }
 
 func (s *UserService) RemoveRefreshToken(userName string, refreshToken string, ctx context.Context) error {
-	_, err := s.Collection.UpdateOne(ctx,
+	_, err := s.Col.UpdateOne(ctx,
 		bson.M{"userName": userName, "refreshTokens": refreshToken},
 		bson.M{"$pull": bson.M{"refreshTokens": refreshToken}},
 	)
@@ -57,7 +76,7 @@ func (s *UserService) RemoveRefreshToken(userName string, refreshToken string, c
 }
 
 func (s *UserService) FindRefreshToken(userName string, refreshToken string, ctx context.Context) error {
-	res := s.Collection.FindOne(ctx, bson.M{"userName": userName, "refreshTokens": refreshToken})
+	res := s.Col.FindOne(ctx, bson.M{"userName": userName, "refreshTokens": refreshToken})
 	if res.Err() != nil {
 		return res.Err()
 	}
@@ -65,7 +84,7 @@ func (s *UserService) FindRefreshToken(userName string, refreshToken string, ctx
 }
 
 func (s *UserService) ListRefreshTokens(userName string, ctx context.Context) ([]string, error) {
-	res := s.Collection.FindOne(ctx, bson.M{"userName": userName}, options.FindOne().SetProjection(bson.M{"refreshTokens": 1}))
+	res := s.Col.FindOne(ctx, bson.M{"userName": userName}, options.FindOne().SetProjection(bson.M{"refreshTokens": 1}))
 	if res.Err() != nil {
 		return nil, res.Err()
 	}
@@ -84,7 +103,7 @@ func (s *UserService) ListRefreshTokens(userName string, ctx context.Context) ([
 
 func (s *UserService) Get(ID primitive.ObjectID) (*User, error) {
 	user := &User{}
-	res := s.Collection.FindOne(context.Background(), bson.M{"_id": ID})
+	res := s.Col.FindOne(context.Background(), bson.M{"_id": ID})
 	if err := res.Decode(user); err != nil {
 		return nil, err
 	}
@@ -92,11 +111,11 @@ func (s *UserService) Get(ID primitive.ObjectID) (*User, error) {
 }
 
 func (s *UserService) List() (*[]User, error) {
-	return cursorToUsers(s.Collection.Find(context.Background(), bson.M{}))
+	return cursorToUsers(s.Col.Find(context.Background(), bson.M{}))
 }
 
 func (s *UserService) Update(user User) error {
-	res := s.Collection.FindOneAndUpdate(
+	res := s.Col.FindOneAndUpdate(
 		context.Background(),
 		bson.M{"_id": user.ID},
 		bson.M{"$set": User{
@@ -112,7 +131,7 @@ func (s *UserService) Update(user User) error {
 }
 
 func (s *UserService) Delete(userID primitive.ObjectID) error {
-	_, err := s.Collection.DeleteOne(
+	_, err := s.Col.DeleteOne(
 		context.Background(),
 		bson.M{"_id": userID})
 	return err
@@ -138,9 +157,9 @@ func cursorToUsers(cur *mongo.Cursor, err error) (*[]User, error) {
 	return &results, nil
 }
 
-func (s *UserService) UpdateAdditionalAttributes(userName string, additionalAttributes interface{}) error {
-	res := s.Collection.FindOneAndUpdate(
-		context.Background(),
+func (s *UserService) UpdateAdditionalAttributes(userName string, additionalAttributes interface{}, ctx context.Context) error {
+	res := s.Col.FindOneAndUpdate(
+		ctx,
 		bson.M{"userName": userName},
 		bson.M{"$set": bson.M{"additionalAttributes": additionalAttributes}},
 	)

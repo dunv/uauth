@@ -8,25 +8,12 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
-type AccessTokenModel struct {
-	jwt.MapClaims `json:"claims"` // jwt.MapClaims comes with default validation
-	User          *User           `json:"user"`
-}
-
-type RefreshTokenModel struct {
-	jwt.MapClaims `json:"claims"` // jwt.MapClaims comes with default validation
-	UserName      string          `json:"userName"`
-}
-
-const (
-	TOKEN_USER_ATTR string = "user"
-)
-
 func GenerateRefreshToken(userName string, userService *UserService, config Config, ctx context.Context) (string, error) {
 	rtClaims := RefreshTokenModel{
-		MapClaims: jwt.MapClaims{
+		Claims: jwt.MapClaims{
 			"iat": time.Now().Unix(),
 			"exp": time.Now().Add(config.RefreshTokenValidity).Unix(),
+			"iss": config.TokenIssuer,
 		},
 		UserName: userName,
 	}
@@ -75,9 +62,10 @@ func GenerateAccessToken(
 	ctx context.Context,
 ) (string, error) {
 	atClaims := AccessTokenModel{
-		MapClaims: jwt.MapClaims{
+		Claims: jwt.MapClaims{
 			"iat": time.Now().Unix(),
 			"exp": time.Now().Add(config.AccessTokenValidity).Unix(),
+			"iss": config.TokenIssuer,
 		},
 		User: user,
 	}

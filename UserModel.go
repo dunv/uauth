@@ -53,10 +53,6 @@ func (u *User) CleanForUI(resolvedRoles *[]Role) (*User, error) {
 	}, nil
 }
 
-// func (u *User) String() string {
-// 	return fmt.Sprintf("User{id:'%s' userName:'%s' firstName:'%s' lastName:'%s' roles:'%s'}", u.ID, u.UserName, u.FirstName, u.LastName, *u.Roles)
-// }
-
 // CheckPassword checks a password hash of a user
 func (u *User) CheckPassword(plainTextPassword string) bool {
 	if u.Password == nil {

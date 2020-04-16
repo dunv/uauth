@@ -19,6 +19,11 @@ const (
 // CreateInitialRolesIfNotExist roles if non-existant
 func CreateInitialRolesIfNotExist(s *mongo.Client, dbName string) error {
 	roleService := NewRoleService(s, dbName)
+	err := roleService.EnsureIndexes()
+	if err != nil {
+		return err
+	}
+
 	allRoles, err := roleService.List()
 	if err != nil {
 		return fmt.Errorf("Error loading roles (%s) \n", err)
@@ -26,7 +31,7 @@ func CreateInitialRolesIfNotExist(s *mongo.Client, dbName string) error {
 
 	if len(*allRoles) == 0 {
 		ulog.Infof("Creating initial roles (auth)...")
-		roles := []Role{Role{
+		roles := []Role{{
 			Name: adminRoleName,
 			Permissions: []Permission{
 				CanReadUsers,
@@ -51,6 +56,10 @@ func CreateInitialRolesIfNotExist(s *mongo.Client, dbName string) error {
 // CreateInitialUsersIfNotExist creates users if non-existant
 func CreateInitialUsersIfNotExist(s *mongo.Client, dbName string) error {
 	userService := NewUserService(s, dbName)
+	err := userService.EnsureIndexes()
+	if err != nil {
+		return err
+	}
 
 	allUsers, err := userService.List()
 	if err != nil {
@@ -60,7 +69,7 @@ func CreateInitialUsersIfNotExist(s *mongo.Client, dbName string) error {
 	if len(*allUsers) == 0 {
 		ulog.Info("Creating initial users (auth)...")
 		roleList := []string{adminRoleName}
-		users := []User{User{
+		users := []User{{
 			FirstName: "Default",
 			LastName:  "Admin",
 			UserName:  "admin",
