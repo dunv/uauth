@@ -49,7 +49,8 @@ func (u *User) CleanForUI(resolvedRoles *[]Role) (*User, error) {
 		Roles:                u.Roles,
 		Permissions:          &listPermissions,
 		AdditionalAttributes: u.AdditionalAttributes,
-		// RefreshTokens:        u.RefreshTokens, // will not really be up to date always -> better use a specialized endpoint when meddling with refreshTokens in the UI
+		// RefreshTokens will not be up to date on the UI-side (old one saved in localStorage/cookies)
+		// -> better use a specialized endpoint when meddling with refreshTokens in the UI
 	}, nil
 }
 

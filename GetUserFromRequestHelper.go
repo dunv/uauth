@@ -9,7 +9,11 @@ import (
 
 // GetUserFromRequestHeaders tries to get the userModel from a request using the "Authorization" header and "Bearer" scheme
 func GetUserFromRequestHeaders(r *http.Request) (*User, error) {
-	config := r.Context().Value(CtxKeyConfig).(Config)
+	config, err := ConfigFromRequest(r)
+	if err != nil {
+		return nil, err
+	}
+
 	wholeHeader := r.Header.Get("Authorization")
 	var parsableToken string
 	if strings.Contains(wholeHeader, "Bearer ") {
@@ -21,7 +25,11 @@ func GetUserFromRequestHeaders(r *http.Request) (*User, error) {
 
 // GetUserFromRequest tries to get the userModel from a request using a token attribute from the get params
 func GetUserFromRequestGetParams(r *http.Request, queryParam ...*string) (*User, error) {
-	config := r.Context().Value(CtxKeyConfig).(Config)
+	config, err := ConfigFromRequest(r)
+	if err != nil {
+		return nil, err
+	}
+
 	usedParam := "jwt"
 	if len(queryParam) == 1 && queryParam[0] != nil {
 		usedParam = *queryParam[0]
@@ -36,6 +44,6 @@ func GetUserFromRequestGetParams(r *http.Request, queryParam ...*string) (*User,
 	return getUserFromToken(parsableToken, config, r.Context())
 }
 
-func getUserFromToken(parsableToken string, config Config, ctx context.Context) (*User, error) {
+func getUserFromToken(parsableToken string, config *Config, ctx context.Context) (*User, error) {
 	return ValidateAccessToken(parsableToken, config, ctx)
 }

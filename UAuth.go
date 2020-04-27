@@ -14,8 +14,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// TODO: protect methods which can only be used if config has been initialized
-// TODO: expose authGet, Basic, JWT with custom usermodels as "helpers"
 // TODO: add logging lib-config
 
 var packageConfig Config
@@ -29,7 +27,7 @@ func SetConfig(_config Config) error {
 	}
 
 	uhttp.AddContext(CtxKeyUserDbClient, mongoClient)
-	uhttp.AddContext(CtxKeyConfig, _config)
+	uhttp.AddContext(CtxKeyConfig, &_config)
 	uhttp.AddContext(CtxKeyUserDbName, _config.UserDbName)
 
 	if err := CreateInitialRolesIfNotExist(mongoClient, _config.UserDbName); err != nil {
@@ -112,11 +110,13 @@ func IsAuthMethod(authMethod string, r *http.Request) bool {
 	return false
 }
 
-func ConfigFromRequest(r *http.Request) Config {
-	if r.Context().Value(CtxKeyConfig) != nil {
-		return r.Context().Value(CtxKeyConfig).(Config)
+func ConfigFromRequest(r *http.Request) (*Config, error) {
+	return ConfigFromContext(r.Context())
+}
+
+func ConfigFromContext(ctx context.Context) (*Config, error) {
+	if ctx.Value(CtxKeyConfig) != nil {
+		return ctx.Value(CtxKeyConfig).(*Config), nil
 	}
-	ulog.Panic("could not find config in request context")
-	// this will never be reached
-	return Config{}
+	return nil, errors.New("could not find config in request context")
 }

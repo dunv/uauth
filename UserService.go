@@ -101,6 +101,31 @@ func (s *UserService) ListRefreshTokens(userName string, ctx context.Context) ([
 	return *userModel.RefreshTokens, nil
 }
 
+func (s *UserService) DeleteExpiredRefreshTokens(userName string, ctx context.Context) error {
+	cfg, err := ConfigFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	tokens, err := s.ListRefreshTokens(userName, ctx)
+	if err != nil {
+		return err
+	}
+
+	// Go through all tokens, check if they are valid (if they are expired, they will be invalid automatically,
+	// currently we do not issue tokens that start being valid in the future)
+	for _, refreshToken := range tokens {
+		_, _, err := ParseRefreshToken(refreshToken, cfg)
+		if err != nil {
+			if err := s.RemoveRefreshToken(userName, refreshToken, ctx); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 func (s *UserService) Get(ID primitive.ObjectID) (*User, error) {
 	user := &User{}
 	res := s.Col.FindOne(context.Background(), bson.M{"_id": ID})

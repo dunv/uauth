@@ -12,14 +12,18 @@ import (
 // LoginHandler handler for getting JSON web token
 var LoginHandler = uhttp.Handler{
 	PostHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		config := uauth.ConfigFromRequest(r)
+		config, err := uauth.ConfigFromRequest(r)
+		if err != nil {
+			uhttp.RenderError(w, r, err)
+			return
+		}
 
 		// Parse request
 		type loginRequestModel struct {
 			User uauth.User `json:"user"`
 		}
 		loginRequest := loginRequestModel{}
-		err := json.NewDecoder(r.Body).Decode(&loginRequest)
+		err = json.NewDecoder(r.Body).Decode(&loginRequest)
 		defer r.Body.Close()
 		if err != nil {
 			uhttp.RenderError(w, r, err)
@@ -51,14 +55,21 @@ var LoginHandler = uhttp.Handler{
 		}
 
 		// Create accessToken
-		signedAccessToken, err := uauth.GenerateAccessToken(uiUser, userService, config, r.Context())
+		signedAccessToken, err := uauth.GenerateAccessToken(uiUser, config, r.Context())
+		if err != nil {
+			uhttp.RenderError(w, r, err)
+			return
+		}
+
+		// Delete all expired tokens
+		err = userService.DeleteExpiredRefreshTokens(dbUser.UserName, r.Context())
 		if err != nil {
 			uhttp.RenderError(w, r, err)
 			return
 		}
 
 		// Create refreshToken
-		signedRefreshToken, err := uauth.GenerateRefreshToken(uiUser.UserName, userService, config, r.Context())
+		signedRefreshToken, err := uauth.GenerateRefreshToken(uiUser.UserName, userService, r.Header.Get("User-Agent"), config, r.Context())
 		if err != nil {
 			uhttp.RenderError(w, r, err)
 			return
