@@ -33,28 +33,28 @@ func main() {
 		return
 	}
 
-	// Setup Handlers
-	handlers.CreateDefaultHandlers()
+	u := uhttp.NewUHTTP()
 
-	uhttp.Handle("/withAuthorization", uhttp.Handler{
-		AddMiddleware: uauth.AuthJWT(),
-		GetHandler: func(w http.ResponseWriter, r *http.Request) {
+	// Setup Handlers
+	handlers.CreateDefaultHandlers(u)
+
+	u.Handle("/withAuthorization", uhttp.NewHandler(
+		uhttp.WithMiddlewares([]uhttp.Middleware{uauth.AuthJWT()}),
+		uhttp.WithGet(func(r *http.Request, ret *int) interface{} {
 			additionalAttrs := additional{}
 			_, err := uauth.UserFromRequest(r, &additionalAttrs)
 			if err != nil {
-				uhttp.RenderError(w, r, err)
-				return
+				return err
 			}
+			return map[string]interface{}{"auth": "withAuthorization", "additionalAttrs": additionalAttrs}
+		}),
+	))
 
-			uhttp.Render(w, r, map[string]interface{}{"auth": "withAuthorization", "additionalAttrs": additionalAttrs})
-		},
-	})
-
-	uhttp.Handle("/noAuthorization", uhttp.Handler{
-		GetHandler: func(w http.ResponseWriter, r *http.Request) {
-			uhttp.Render(w, r, map[string]string{"auth": "noAuthorization"})
-		},
-	})
+	u.Handle("/noAuthorization", uhttp.NewHandler(
+		uhttp.WithGet(func(r *http.Request, ret *int) interface{} {
+			return map[string]string{"auth": "noAuthorization"}
+		}),
+	))
 
 	ip := "0.0.0.0"
 	port := 8080
