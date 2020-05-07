@@ -8,7 +8,7 @@ import (
 
 type Config struct {
 	// uhttp instance
-	UHTTP uhttp.UHTTP
+	UHTTP *uhttp.UHTTP
 
 	// Token secret used for signing and verifying tokens
 	BCryptSecret string

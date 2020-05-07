@@ -20,14 +20,26 @@ var packageConfig Config
 func SetConfig(_config Config) error {
 	packageConfig = _config
 
+	if packageConfig.UHTTP == nil {
+		return errors.New("UHTTP needs to be set in config")
+	}
+
 	mongoClient, _, err := umongo.NewDbClient(_config.UserDbConnectionString, time.Second)
 	if err != nil {
 		return fmt.Errorf("Could not connect to db. Exiting (%v)", err)
 	}
 
-	packageConfig.UHTTP.AddContext(CtxKeyUserDbClient, mongoClient)
-	packageConfig.UHTTP.AddContext(CtxKeyConfig, &_config)
-	packageConfig.UHTTP.AddContext(CtxKeyUserDbName, _config.UserDbName)
+	if err := packageConfig.UHTTP.AddContext(CtxKeyUserDbClient, mongoClient); err != nil {
+		return err
+	}
+
+	if err := packageConfig.UHTTP.AddContext(CtxKeyConfig, &_config); err != nil {
+		return err
+	}
+
+	if err := packageConfig.UHTTP.AddContext(CtxKeyUserDbName, _config.UserDbName); err != nil {
+		return err
+	}
 
 	if err := CreateInitialRolesIfNotExist(mongoClient, _config.UserDbName); err != nil {
 		return err
