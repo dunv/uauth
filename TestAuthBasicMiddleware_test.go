@@ -11,18 +11,18 @@ import (
 	"github.com/dunv/ulog"
 )
 
-func authBasicFixture() uhttp.Handler {
+func authBasicFixture() http.HandlerFunc {
 	// Suppress log-output
 	ulog.SetWriter(bufio.NewWriter(nil), nil)
 
-	return uhttp.Handler{
-		AddMiddleware: AuthBasic("testUser", "fed3b61b26081849378080b34e693d2e"),
-		GetHandler:    http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}),
-	}
+	return uhttp.NewHandler(
+		uhttp.WithMiddlewares([]uhttp.Middleware{AuthBasic("testUser", "fed3b61b26081849378080b34e693d2e")}),
+		uhttp.WithGet(func(r *http.Request, ret *int) interface{} { return nil }),
+	).HandlerFunc(uhttp.NewUHTTP())
 }
 
 func TestFailingAuthBasic(t *testing.T) {
-	ts := httptest.NewServer(authBasicFixture().HandlerFunc())
+	ts := httptest.NewServer(authBasicFixture())
 	defer ts.Close()
 	res, err := http.Get(ts.URL)
 	if err != nil {
@@ -34,7 +34,7 @@ func TestFailingAuthBasic(t *testing.T) {
 }
 
 func TestSuccessAuthBasic(t *testing.T) {
-	ts := httptest.NewServer(authBasicFixture().HandlerFunc())
+	ts := httptest.NewServer(authBasicFixture())
 	defer ts.Close()
 	req := AuthBasicRequestTest("testUser", "testPassword", http.MethodGet, ts.URL, nil)
 	res := DoRequestTest(req)

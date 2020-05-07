@@ -9,35 +9,33 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-var DeleteUserHandler = uhttp.Handler{
-	AddMiddleware: uauth.AuthJWT(),
-	RequiredGet: uhttp.R{
+var DeleteUserHandler = uhttp.NewHandler(
+	uhttp.WithMiddlewares([]uhttp.Middleware{
+		uauth.AuthJWT(),
+	}),
+	uhttp.WithRequiredGet(uhttp.R{
 		"userId": uhttp.STRING,
-	},
-	DeleteHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	}),
+	uhttp.WithDelete(func(r *http.Request, returnCode *int) interface{} {
 		user, err := uauth.UserFromRequest(r)
 		if err != nil {
-			uhttp.RenderError(w, r, err)
-			return
+			return err
 		}
 		if !user.CheckPermission(uauth.CanDeleteUsers) {
-			uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", uauth.CanDeleteUsers))
-			return
+			return fmt.Errorf("User does not have the required permission: %s", uauth.CanDeleteUsers)
 		}
 
 		service := uauth.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
 		ID, err := primitive.ObjectIDFromHex(*uhttp.GetAsString("userId", r))
 		if err != nil {
-			uhttp.RenderError(w, r, err)
-			return
+			return err
 		}
 
 		err = service.Delete(ID)
 		if err != nil {
-			uhttp.RenderError(w, r, err)
-			return
+			return err
 		}
 
-		uhttp.RenderMessageWithStatusCode(w, r, 200, "Deleted successfully")
+		return map[string]string{"msg": "Deleted successfully"}
 	}),
-}
+)

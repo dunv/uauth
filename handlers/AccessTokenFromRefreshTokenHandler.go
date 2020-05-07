@@ -8,12 +8,12 @@ import (
 	"github.com/dunv/uhttp"
 )
 
-var AccessTokenFromRefreshTokenHandler = uhttp.Handler{
-	PostHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+var AccessTokenFromRefreshTokenHandler = uhttp.NewHandler(
+	uhttp.WithPost(func(r *http.Request, returnCode *int) interface{} {
+
 		config, err := uauth.ConfigFromRequest(r)
 		if err != nil {
-			uhttp.RenderError(w, r, err)
-			return
+			return err
 		}
 
 		userService := uauth.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
@@ -27,49 +27,44 @@ var AccessTokenFromRefreshTokenHandler = uhttp.Handler{
 		err = json.NewDecoder(r.Body).Decode(&req)
 		defer r.Body.Close()
 		if err != nil {
-			uhttp.RenderError(w, r, err)
-			return
+			return err
 		}
 
 		// Check if token is valid (entails checking the DB)
 		refreshTokenModel, err := uauth.ValidateRefreshToken(req.RefreshToken, userService, config, r.Context())
 		if err != nil {
-			uhttp.RenderWithStatusCode(w, r, http.StatusUnauthorized, uauth.MachineError(uauth.ErrInvalidRefreshToken, err))
-			return
+			*returnCode = http.StatusUnauthorized
+			return uauth.MachineError(uauth.ErrInvalidRefreshToken, err)
 		}
 
 		// Get user
 		dbUser, err := userService.GetByUserName(refreshTokenModel.UserName)
 		if err != nil {
-			uhttp.RenderWithStatusCode(w, r, http.StatusUnauthorized, uauth.MachineError(uauth.ErrInvalidUser, err))
-			return
+			*returnCode = http.StatusUnauthorized
+			return uauth.MachineError(uauth.ErrInvalidUser, err)
 		}
 
 		// Resolve roles into permissions (currently exact copy of LoginHandler)
 		rolesService := uauth.NewRoleService(uauth.UserDB(r), uauth.UserDBName(r))
 		roleDict, err := rolesService.GetMultipleByName(*dbUser.Roles)
 		if err != nil {
-			uhttp.RenderError(w, r, err)
-			return
+			return err
 		}
 		uiUser, err := dbUser.CleanForUI(roleDict)
 		if err != nil {
-			uhttp.RenderError(w, r, err)
-			return
+			return err
 		}
 
 		// Create accessToken
 		signedAccessToken, err := uauth.GenerateAccessToken(uiUser, config, r.Context())
 		if err != nil {
-			uhttp.RenderError(w, r, err)
-			return
+			return err
 		}
 
-		uhttp.Render(w, r, map[string]interface{}{
+		return map[string]interface{}{
 			"user":         uiUser,
 			"accessToken":  signedAccessToken,
 			"refreshToken": req.RefreshToken,
-		})
-
+		}
 	}),
-}
+)

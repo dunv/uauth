@@ -9,32 +9,27 @@ import (
 )
 
 // CheckLoginHandler for testing a user's webtoken
-var CheckLoginHandler = uhttp.Handler{
-	PostHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		config, err := uauth.ConfigFromRequest(r)
-		if err != nil {
-			uhttp.RenderError(w, r, err)
-			return
-		}
+var CheckLoginHandler = uhttp.NewHandler(uhttp.WithPost(func(r *http.Request, returnCode *int) interface{} {
+	config, err := uauth.ConfigFromRequest(r)
+	if err != nil {
+		return err
+	}
 
-		// Parse request
-		type checkLoginRequest struct {
-			AccessToken string `json:"accessToken"`
-		}
-		req := checkLoginRequest{}
-		err = json.NewDecoder(r.Body).Decode(&req)
-		defer r.Body.Close()
-		if err != nil {
-			uhttp.RenderError(w, r, err)
-			return
-		}
+	// Parse request
+	type checkLoginRequest struct {
+		AccessToken string `json:"accessToken"`
+	}
+	req := checkLoginRequest{}
+	err = json.NewDecoder(r.Body).Decode(&req)
+	defer r.Body.Close()
+	if err != nil {
+		return err
+	}
 
-		user, err := uauth.ValidateAccessToken(req.AccessToken, config, r.Context())
-		if err != nil {
-			uhttp.RenderError(w, r, err)
-			return
-		}
+	user, err := uauth.ValidateAccessToken(req.AccessToken, config, r.Context())
+	if err != nil {
+		return err
+	}
 
-		uhttp.Render(w, r, user)
-	}),
-}
+	return user
+}))

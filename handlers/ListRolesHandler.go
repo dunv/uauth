@@ -8,27 +8,26 @@ import (
 	"github.com/dunv/uhttp"
 )
 
-var ListRolesHandler = uhttp.Handler{
-	AddMiddleware: uauth.AuthJWT(),
-	GetHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+var ListRolesHandler = uhttp.NewHandler(
+	uhttp.WithMiddlewares([]uhttp.Middleware{
+		uauth.AuthJWT(),
+	}),
+	uhttp.WithGet(func(r *http.Request, returnCode *int) interface{} {
 		user, err := uauth.UserFromRequest(r)
 		if err != nil {
-			uhttp.RenderError(w, r, err)
-			return
+			return err
 		}
 		if !user.CheckPermission(uauth.CanReadUsers) {
-			uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", uauth.CanReadUsers))
-			return
+			return fmt.Errorf("User does not have the required permission: %s", uauth.CanReadUsers)
 		}
 
 		roleService := uauth.NewRoleService(uauth.UserDB(r), uauth.UserDBName(r))
 		rolesFromDb, err := roleService.List()
 
 		if err != nil {
-			uhttp.RenderError(w, r, err)
-			return
+			return err
 		}
 
-		uhttp.Render(w, r, *rolesFromDb)
+		return *rolesFromDb
 	}),
-}
+)

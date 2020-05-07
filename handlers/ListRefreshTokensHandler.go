@@ -8,24 +8,24 @@ import (
 	"github.com/dunv/uhttp"
 )
 
-var ListRefreshTokensHandler = uhttp.Handler{
-	AddMiddleware: uauth.AuthJWT(),
-	GetHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+var ListRefreshTokensHandler = uhttp.NewHandler(
+	uhttp.WithMiddlewares([]uhttp.Middleware{
+		uauth.AuthJWT(),
+	}),
+	uhttp.WithGet(func(r *http.Request, returnCode *int) interface{} {
 		userService := uauth.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
 		user, err := uauth.UserFromRequest(r)
 		if err != nil {
-			uhttp.RenderError(w, r, err)
-			return
+			return err
 		}
 
 		tokens, err := userService.ListRefreshTokens(user.UserName, r.Context())
 		if err != nil {
-			uhttp.RenderError(w, r, fmt.Errorf("could not find refreshTokens (%s)", err))
-			return
+			return fmt.Errorf("could not find refreshTokens (%s)", err)
 		}
 
-		uhttp.Render(w, r, map[string]interface{}{
+		return map[string]interface{}{
 			"refreshTokens": tokens,
-		})
+		}
 	}),
-}
+)

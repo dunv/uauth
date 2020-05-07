@@ -4,24 +4,24 @@ import (
 	"github.com/dunv/uhttp"
 )
 
-func CreateDefaultHandlers() {
+func CreateDefaultHandlers(u *uhttp.UHTTP) {
 	// Login with username and password
-	uhttp.Handle("/uauth/login", LoginHandler)
+	u.Handle("/uauth/login", LoginHandler)
 
 	// RefreshToken (accessible by every user)
-	uhttp.Handle("/uauth/accessTokenFromRefreshToken", AccessTokenFromRefreshTokenHandler) // Get access-token by supplying a valid refresh-token
-	uhttp.Handle("/uauth/renewRefreshToken", RenewRefreshTokenHandler)                     // Get a new refresh-token by supplying an old still valid one
-	uhttp.Handle("/uauth/listRefreshTokens", ListRefreshTokensHandler)
-	uhttp.Handle("/uauth/deleteRefreshToken", DeleteRefreshTokenHandler)
+	u.Handle("/uauth/accessTokenFromRefreshToken", AccessTokenFromRefreshTokenHandler) // Get access-token by supplying a valid refresh-token
+	u.Handle("/uauth/renewRefreshToken", RenewRefreshTokenHandler)                     // Get a new refresh-token by supplying an old still valid one
+	u.Handle("/uauth/listRefreshTokens", ListRefreshTokensHandler)
+	u.Handle("/uauth/deleteRefreshToken", DeleteRefreshTokenHandler)
 
 	// Check if login works
-	uhttp.Handle("/uauth/checkLogin", CheckLoginHandler)
+	u.Handle("/uauth/checkLogin", CheckLoginHandler)
 
 	// Admin handlers
-	uhttp.Handle("/uauth/getUser", GetUserHandler)
-	uhttp.Handle("/uauth/listUsers", ListUsersHandler)
-	uhttp.Handle("/uauth/listRoles", ListRolesHandler)
-	uhttp.Handle("/uauth/createUser", CreateUserHandler)
-	uhttp.Handle("/uauth/updateUser", UpdateUserHandler)
-	uhttp.Handle("/uauth/deleteUser", DeleteUserHandler)
+	u.Handle("/uauth/getUser", GetUserHandler)
+	u.Handle("/uauth/listUsers", ListUsersHandler)
+	u.Handle("/uauth/listRoles", ListRolesHandler)
+	u.Handle("/uauth/createUser", CreateUserHandler)
+	u.Handle("/uauth/updateUser", UpdateUserHandler)
+	u.Handle("/uauth/deleteUser", DeleteUserHandler)
 }

@@ -2,9 +2,14 @@ package uauth
 
 import (
 	"time"
+
+	"github.com/dunv/uhttp"
 )
 
 type Config struct {
+	// uhttp instance
+	UHTTP uhttp.UHTTP
+
 	// Token secret used for signing and verifying tokens
 	BCryptSecret string
 

@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/dunv/uhttp"
 	"github.com/dunv/ulog"
 	"github.com/dunv/umongo"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -26,9 +25,9 @@ func SetConfig(_config Config) error {
 		return fmt.Errorf("Could not connect to db. Exiting (%v)", err)
 	}
 
-	uhttp.AddContext(CtxKeyUserDbClient, mongoClient)
-	uhttp.AddContext(CtxKeyConfig, &_config)
-	uhttp.AddContext(CtxKeyUserDbName, _config.UserDbName)
+	packageConfig.UHTTP.AddContext(CtxKeyUserDbClient, mongoClient)
+	packageConfig.UHTTP.AddContext(CtxKeyConfig, &_config)
+	packageConfig.UHTTP.AddContext(CtxKeyUserDbName, _config.UserDbName)
 
 	if err := CreateInitialRolesIfNotExist(mongoClient, _config.UserDbName); err != nil {
 		return err

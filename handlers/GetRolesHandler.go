@@ -8,23 +8,18 @@ import (
 	"github.com/dunv/uhttp"
 )
 
-type rolesGetResponse struct {
-	Roles   *[]uauth.Role `json:"roles"`
-	Success bool          `json:"success"`
-}
-
 // RolesGetHandler for getting days for the logged in user
-var GetRolesHandler = uhttp.Handler{
-	AddMiddleware: uauth.AuthJWT(),
-	GetHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+var GetRolesHandler = uhttp.NewHandler(
+	uhttp.WithMiddlewares([]uhttp.Middleware{
+		uauth.AuthJWT(),
+	}),
+	uhttp.WithGet(func(r *http.Request, returnCode *int) interface{} {
 		user, err := uauth.UserFromRequest(r)
 		if err != nil {
-			uhttp.RenderError(w, r, err)
-			return
+			return err
 		}
 		if !user.CheckPermission(uauth.CanReadUsers) {
-			uhttp.RenderError(w, r, fmt.Errorf("User does not have the required permission: %s", uauth.CanReadUsers))
-			return
+			return fmt.Errorf("User does not have the required permission: %s", uauth.CanReadUsers)
 		}
 
 		// Get Roles
@@ -33,14 +28,13 @@ var GetRolesHandler = uhttp.Handler{
 
 		// Check error
 		if err != nil {
-			uhttp.RenderError(w, r, err)
-			return
+			return err
 		}
 
 		// Encode response
-		uhttp.Render(w, r, rolesGetResponse{
-			Success: true,
-			Roles:   roles,
-		})
+		return map[string]interface{}{
+			"success": true,
+			"roles":   roles,
+		}
 	}),
-}
+)

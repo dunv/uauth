@@ -10,7 +10,7 @@ import (
 	"github.com/dunv/ulog"
 )
 
-func AuthBasic(wantedUsername string, wantedMd5Password string) *uhttp.Middleware {
+func AuthBasic(wantedUsername string, wantedMd5Password string) uhttp.Middleware {
 	tmp := uhttp.Middleware(func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 
@@ -18,7 +18,7 @@ func AuthBasic(wantedUsername string, wantedMd5Password string) *uhttp.Middlewar
 			passMd5 := fmt.Sprintf("%x", md5.Sum([]byte(pass)))
 
 			if !ok || user != wantedUsername || passMd5 != wantedMd5Password {
-				uhttp.RenderErrorWithStatusCode(w, r, http.StatusUnauthorized, fmt.Errorf("Unauthorized"))
+				packageConfig.UHTTP.RenderErrorWithStatusCode(w, r, http.StatusUnauthorized, fmt.Errorf("Unauthorized"), false)
 				return
 			}
 
@@ -29,5 +29,5 @@ func AuthBasic(wantedUsername string, wantedMd5Password string) *uhttp.Middlewar
 			next.ServeHTTP(w, r.WithContext(ctx))
 		}
 	})
-	return &tmp
+	return tmp
 }

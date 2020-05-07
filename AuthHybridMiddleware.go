@@ -15,8 +15,8 @@ func AuthHybrid(
 	jwtSecrets map[string]string,
 	authBasicCredentials map[string]string,
 	userModel jwt.Claims,
-) *uhttp.Middleware {
-	tmp := uhttp.Middleware(func(next http.HandlerFunc) http.HandlerFunc {
+) uhttp.Middleware {
+	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			// try all secrets in Headers
 			for name, secret := range jwtSecrets {
@@ -58,8 +58,7 @@ func AuthHybrid(
 				}
 			}
 
-			uhttp.RenderErrorWithStatusCode(w, r, http.StatusUnauthorized, fmt.Errorf("Unauthorized"))
+			packageConfig.UHTTP.RenderErrorWithStatusCode(w, r, http.StatusUnauthorized, fmt.Errorf("Unauthorized"), false)
 		}
-	})
-	return &tmp
+	}
 }

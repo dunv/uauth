@@ -12,23 +12,21 @@ type deleteRefreshTokenRequest struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
-var DeleteRefreshTokenHandler = uhttp.Handler{
-	AddMiddleware: uauth.AuthJWT(),
-	PostModel:     deleteRefreshTokenRequest{},
-	PostHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+var DeleteRefreshTokenHandler = uhttp.NewHandler(
+	uhttp.WithMiddlewares([]uhttp.Middleware{uauth.AuthJWT()}),
+	uhttp.WithPostModel(deleteRefreshTokenRequest{}, func(r *http.Request, model interface{}, returnCode *int) interface{} {
 		userService := uauth.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
 		user, err := uauth.UserFromRequest(r)
 		if err != nil {
-			uhttp.RenderError(w, r, err)
-			return
+			return err
 		}
-		tokenModel := uhttp.ParsedModel(r).(*deleteRefreshTokenRequest)
+		tokenModel := model.(*deleteRefreshTokenRequest)
 
 		err = userService.RemoveRefreshToken(user.UserName, tokenModel.RefreshToken, r.Context())
 		if err != nil {
-			uhttp.RenderError(w, r, fmt.Errorf("could not delete refreshToken (%s)", err))
-			return
+			return fmt.Errorf("could not delete refreshToken (%s)", err)
 		}
-		w.WriteHeader(http.StatusNoContent)
+		*returnCode = http.StatusNoContent
+		return nil
 	}),
-}
+)

@@ -3,6 +3,7 @@ package uauth
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -32,12 +33,12 @@ type authHybridResponseModel struct {
 	IsAuth_jwt2Get bool           `json:"isAuth_jwt2Get"`
 }
 
-func authHybridTestFixture() uhttp.Handler {
+func authHybridTestFixture() http.HandlerFunc {
 	// Suppress log-output
 	ulog.SetWriter(bufio.NewWriter(nil), nil)
 
-	return uhttp.Handler{
-		AddMiddleware: AuthHybrid(
+	return uhttp.NewHandler(
+		uhttp.WithMiddlewares([]uhttp.Middleware{AuthHybrid(
 			map[string]string{
 				"jwt1": "qwertyuiopasdfghjklzxcvbnm123456",
 				"jwt2": "1234qwertyuiopasdfghjklzxcvbnm123456",
@@ -47,10 +48,10 @@ func authHybridTestFixture() uhttp.Handler {
 				"testUser2": "fed3b61b26081849378080b34e693d2e",
 			},
 			testUserModel{},
-		),
-		GetHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		)}),
+		uhttp.WithGet(func(r *http.Request, ret *int) interface{} {
 			if testUser, ok := GenericUserFromRequest(r).(*testUserModel); ok {
-				uhttp.Render(w, r, authHybridResponseModel{
+				return authHybridResponseModel{
 					JWTUser:        testUser,
 					IsAuthBasic:    IsAuthBasic(r),
 					IsAuthJWT:      IsAuthJWT(r),
@@ -58,9 +59,9 @@ func authHybridTestFixture() uhttp.Handler {
 					IsAuth_jwt2:    IsAuthMethod("jwt2", r),
 					IsAuth_jwt1Get: IsAuthMethod("jwt1Get", r),
 					IsAuth_jwt2Get: IsAuthMethod("jwt2Get", r),
-				})
+				}
 			} else if testUser, ok := GenericUserFromRequest(r).(string); ok {
-				uhttp.Render(w, r, authHybridResponseModel{
+				return authHybridResponseModel{
 					BasicUser:      testUser,
 					IsAuthBasic:    IsAuthBasic(r),
 					IsAuthJWT:      IsAuthJWT(r),
@@ -68,10 +69,11 @@ func authHybridTestFixture() uhttp.Handler {
 					IsAuth_jwt2:    IsAuthMethod("jwt2", r),
 					IsAuth_jwt1Get: IsAuthMethod("jwt1Get", r),
 					IsAuth_jwt2Get: IsAuthMethod("jwt2Get", r),
-				})
+				}
 			}
+			return errors.New("should not happen")
 		}),
-	}
+	).HandlerFunc(uhttp.NewUHTTP())
 }
 
 func checkAuthHybridResponse(res *http.Response, expected *authHybridResponseModel, t *testing.T) {
@@ -139,7 +141,7 @@ func checkAuthHybridResponse(res *http.Response, expected *authHybridResponseMod
 }
 
 func TestSuccessAuthHybridFirstSecret(t *testing.T) {
-	ts := httptest.NewServer(authHybridTestFixture().HandlerFunc())
+	ts := httptest.NewServer(authHybridTestFixture())
 	defer ts.Close()
 
 	req := JWTRequestTest(
@@ -165,7 +167,7 @@ func TestSuccessAuthHybridFirstSecret(t *testing.T) {
 }
 
 func TestSuccessAuthHybridSecondSecret(t *testing.T) {
-	ts := httptest.NewServer(authHybridTestFixture().HandlerFunc())
+	ts := httptest.NewServer(authHybridTestFixture())
 	defer ts.Close()
 
 	req := JWTRequestTest(
@@ -191,7 +193,7 @@ func TestSuccessAuthHybridSecondSecret(t *testing.T) {
 }
 
 func TestSuccessAuthHybridFirstSecretGet(t *testing.T) {
-	ts := httptest.NewServer(authHybridTestFixture().HandlerFunc())
+	ts := httptest.NewServer(authHybridTestFixture())
 	defer ts.Close()
 
 	req := JWTRequestGetTest(
@@ -217,7 +219,7 @@ func TestSuccessAuthHybridFirstSecretGet(t *testing.T) {
 }
 
 func TestSuccessAuthHybridSecondSecretGet(t *testing.T) {
-	ts := httptest.NewServer(authHybridTestFixture().HandlerFunc())
+	ts := httptest.NewServer(authHybridTestFixture())
 	defer ts.Close()
 
 	req := JWTRequestGetTest(
@@ -243,7 +245,7 @@ func TestSuccessAuthHybridSecondSecretGet(t *testing.T) {
 }
 
 func TestFailureAuthHybridJWT(t *testing.T) {
-	ts := httptest.NewServer(authHybridTestFixture().HandlerFunc())
+	ts := httptest.NewServer(authHybridTestFixture())
 	defer ts.Close()
 
 	req := JWTRequestTest(
@@ -261,7 +263,7 @@ func TestFailureAuthHybridJWT(t *testing.T) {
 }
 
 func TestSuccessAuthHybridBasicUser1(t *testing.T) {
-	ts := httptest.NewServer(authHybridTestFixture().HandlerFunc())
+	ts := httptest.NewServer(authHybridTestFixture())
 	defer ts.Close()
 	req := AuthBasicRequestTest("testUser", "testPassword", http.MethodGet, ts.URL, nil)
 	res := DoRequestTest(req)
@@ -280,7 +282,7 @@ func TestSuccessAuthHybridBasicUser1(t *testing.T) {
 }
 
 func TestSuccessAuthHybridBasicUser2(t *testing.T) {
-	ts := httptest.NewServer(authHybridTestFixture().HandlerFunc())
+	ts := httptest.NewServer(authHybridTestFixture())
 	defer ts.Close()
 	req := AuthBasicRequestTest("testUser2", "testPassword", http.MethodGet, ts.URL, nil)
 	res := DoRequestTest(req)
@@ -299,7 +301,7 @@ func TestSuccessAuthHybridBasicUser2(t *testing.T) {
 }
 
 func TestFailureAuthHybridBasic(t *testing.T) {
-	ts := httptest.NewServer(authBasicFixture().HandlerFunc())
+	ts := httptest.NewServer(authBasicFixture())
 	defer ts.Close()
 	req := AuthBasicRequestTest("testUser1", "testPassword", http.MethodGet, ts.URL, nil)
 	res := DoRequestTest(req)

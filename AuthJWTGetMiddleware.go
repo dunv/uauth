@@ -22,7 +22,7 @@ func AuthJWTGet() *uhttp.Middleware {
 			user, err := GetUserFromRequestGetParams(r)
 			if err != nil {
 				ulog.Infof("Denying access (%s)", err)
-				uhttp.RenderError(w, r, fmt.Errorf("Unauthorized"))
+				packageConfig.UHTTP.RenderError(w, r, fmt.Errorf("Unauthorized"))
 				return
 			}
 			ctx := context.WithValue(r.Context(), CtxKeyUser, *user)
