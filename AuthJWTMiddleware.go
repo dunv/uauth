@@ -16,7 +16,7 @@ func AuthJWT() uhttp.Middleware {
 	tmp := uhttp.Middleware(func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			if packageConfig.UserDbName == "" || packageConfig.UserDbConnectionString == "" || packageConfig.BCryptSecret == "" {
-				ulog.Panic("uauth packageConfig has not been set, unable to use AuthJWT()", packageConfig)
+				ulog.Panic(fmt.Errorf("uauth packageConfig has not been set, unable to use AuthJWT() (%v)", packageConfig))
 			}
 
 			user, err := GetUserFromRequestHeaders(r)
