@@ -5,11 +5,11 @@ go 1.13
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dunv/uhelpers v1.0.13
-	github.com/dunv/uhttp v1.0.58
+	github.com/dunv/uhttp v1.0.61
 	github.com/dunv/ulog v1.0.21
 	github.com/dunv/umongo v1.0.12
-	go.mongodb.org/mongo-driver v1.3.3
-	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
+	go.mongodb.org/mongo-driver v1.3.4
+	golang.org/x/crypto v0.0.0-20200604202706-70a84ac30bf9
 )
 
 // replace github.com/dunv/uhttp => ../uhttp
