@@ -24,7 +24,7 @@ func SetConfig(_config Config) error {
 		return errors.New("UHTTP needs to be set in config")
 	}
 
-	mongoClient, _, err := umongo.NewDbClient(_config.UserDbConnectionString, time.Second)
+	mongoClient, _, err := umongo.NewDbClient(_config.UserDbConnectionString, fmt.Sprintf("uauth_%s", _config.TokenIssuer), time.Second)
 	if err != nil {
 		return fmt.Errorf("Could not connect to db. Exiting (%v)", err)
 	}
