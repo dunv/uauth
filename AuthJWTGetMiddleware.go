@@ -12,7 +12,7 @@ import (
 // Auth verify JWT token in url ("jwt=...")
 // This method assumes the BCryptSecret already attached to the request context
 // i.e. uauth must have been initialized with uauth.SetConfig(...)
-func AuthJWTGet() *uhttp.Middleware {
+func AuthJWTGet() uhttp.Middleware {
 	if packageConfig.UserDbName == "" || packageConfig.UserDbConnectionString == "" || packageConfig.BCryptSecret == "" {
 		ulog.Fatal("uauth packageConfig has not been set, unable to use AuthJWTGet()")
 		return nil
@@ -32,5 +32,5 @@ func AuthJWTGet() *uhttp.Middleware {
 			next.ServeHTTP(w, r.WithContext(ctx))
 		}
 	})
-	return &tmp
+	return tmp
 }

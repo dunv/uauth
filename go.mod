@@ -8,8 +8,8 @@ require (
 	github.com/dunv/uhttp v1.0.65
 	github.com/dunv/ulog v1.0.21
 	github.com/dunv/umongo v1.0.17
-	go.mongodb.org/mongo-driver v1.4.1
-	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
+	go.mongodb.org/mongo-driver v1.4.2
+	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
 )
 
 // replace github.com/dunv/uhttp => ../uhttp
