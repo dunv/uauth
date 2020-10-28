@@ -13,12 +13,12 @@ import (
 // This method assumes the BCryptSecret already attached to the request context
 // i.e. uauth must have been initialized with uauth.SetConfig(...)
 func AuthJWTGet() uhttp.Middleware {
-	if packageConfig.UserDbName == "" || packageConfig.UserDbConnectionString == "" || packageConfig.BCryptSecret == "" {
-		ulog.Errorf("uauth packageConfig has not been set, unable to use AuthJWTGet() (%v)", packageConfig)
-		return nil
-	}
 	tmp := uhttp.Middleware(func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
+			if packageConfig.UserDbName == "" || packageConfig.UserDbConnectionString == "" || packageConfig.BCryptSecret == "" {
+				ulog.Panicf("uauth packageConfig has not been set, unable to use AuthJWTGet() (%v)", packageConfig)
+			}
+
 			user, err := GetUserFromRequestGetParams(r)
 			if err != nil {
 				ulog.Infof("Denying access (%s)", err)
