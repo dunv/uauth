@@ -14,7 +14,7 @@ import (
 // i.e. uauth must have been initialized with uauth.SetConfig(...)
 func AuthJWTGet() uhttp.Middleware {
 	if packageConfig.UserDbName == "" || packageConfig.UserDbConnectionString == "" || packageConfig.BCryptSecret == "" {
-		ulog.Fatal("uauth packageConfig has not been set, unable to use AuthJWTGet()")
+		ulog.Errorf("uauth packageConfig has not been set, unable to use AuthJWTGet() (%v)", packageConfig)
 		return nil
 	}
 	tmp := uhttp.Middleware(func(next http.HandlerFunc) http.HandlerFunc {
