@@ -16,7 +16,7 @@ func authBasicFixture() http.HandlerFunc {
 	ulog.SetWriter(bufio.NewWriter(nil), nil)
 
 	return uhttp.NewHandler(
-		uhttp.WithMiddlewares([]uhttp.Middleware{AuthBasic("testUser", "fed3b61b26081849378080b34e693d2e")}),
+		uhttp.WithMiddlewares(AuthBasic("testUser", "fed3b61b26081849378080b34e693d2e")),
 		uhttp.WithGet(func(r *http.Request, ret *int) interface{} { return nil }),
 	).HandlerFunc(uhttp.NewUHTTP())
 }

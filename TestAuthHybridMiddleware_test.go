@@ -38,7 +38,7 @@ func authHybridTestFixture() http.HandlerFunc {
 	ulog.SetWriter(bufio.NewWriter(nil), nil)
 
 	return uhttp.NewHandler(
-		uhttp.WithMiddlewares([]uhttp.Middleware{AuthHybrid(
+		uhttp.WithMiddlewares(AuthHybrid(
 			map[string]string{
 				"jwt1": "qwertyuiopasdfghjklzxcvbnm123456",
 				"jwt2": "1234qwertyuiopasdfghjklzxcvbnm123456",
@@ -48,7 +48,7 @@ func authHybridTestFixture() http.HandlerFunc {
 				"testUser2": "fed3b61b26081849378080b34e693d2e",
 			},
 			testUserModel{},
-		)}),
+		)),
 		uhttp.WithGet(func(r *http.Request, ret *int) interface{} {
 			if testUser, ok := GenericUserFromRequest(r).(*testUserModel); ok {
 				return authHybridResponseModel{

@@ -9,9 +9,7 @@ import (
 )
 
 var ListRefreshTokensHandler = uhttp.NewHandler(
-	uhttp.WithMiddlewares([]uhttp.Middleware{
-		uauth.AuthJWT(),
-	}),
+	uhttp.WithMiddlewares(uauth.AuthJWT()),
 	uhttp.WithGet(func(r *http.Request, returnCode *int) interface{} {
 		userService := uauth.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
 		user, err := uauth.UserFromRequest(r)

@@ -21,9 +21,7 @@ type createUserModel struct {
 }
 
 var CreateUserHandler = uhttp.NewHandler(
-	uhttp.WithMiddlewares([]uhttp.Middleware{
-		uauth.AuthJWT(),
-	}),
+	uhttp.WithMiddlewares(uauth.AuthJWT()),
 	uhttp.WithPostModel(
 		createUserModel{},
 		func(r *http.Request, model interface{}, returnCode *int) interface{} {

@@ -11,9 +11,7 @@ import (
 )
 
 var UpdateUserHandler = uhttp.NewHandler(
-	uhttp.WithMiddlewares([]uhttp.Middleware{
-		uauth.AuthJWT(),
-	}),
+	uhttp.WithMiddlewares(uauth.AuthJWT()),
 	uhttp.WithPostModel(
 		uauth.User{},
 		func(r *http.Request, model interface{}, returnCode *int) interface{} {

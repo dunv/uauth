@@ -13,7 +13,7 @@ type deleteRefreshTokenRequest struct {
 }
 
 var DeleteRefreshTokenHandler = uhttp.NewHandler(
-	uhttp.WithMiddlewares([]uhttp.Middleware{uauth.AuthJWT()}),
+	uhttp.WithMiddlewares(uauth.AuthJWT()),
 	uhttp.WithPostModel(deleteRefreshTokenRequest{}, func(r *http.Request, model interface{}, returnCode *int) interface{} {
 		userService := uauth.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
 		user, err := uauth.UserFromRequest(r)

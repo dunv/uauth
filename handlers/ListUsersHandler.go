@@ -9,9 +9,7 @@ import (
 )
 
 var ListUsersHandler = uhttp.NewHandler(
-	uhttp.WithMiddlewares([]uhttp.Middleware{
-		uauth.AuthJWT(),
-	}),
+	uhttp.WithMiddlewares(uauth.AuthJWT()),
 	uhttp.WithGet(func(r *http.Request, returnCode *int) interface{} {
 		user, err := uauth.UserFromRequest(r)
 		if err != nil {

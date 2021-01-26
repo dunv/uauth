@@ -10,9 +10,7 @@ import (
 )
 
 var DeleteUserHandler = uhttp.NewHandler(
-	uhttp.WithMiddlewares([]uhttp.Middleware{
-		uauth.AuthJWT(),
-	}),
+	uhttp.WithMiddlewares(uauth.AuthJWT()),
 	uhttp.WithRequiredGet(uhttp.R{
 		"userId": uhttp.STRING,
 	}),

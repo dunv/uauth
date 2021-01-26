@@ -24,7 +24,6 @@ func CheckPermissions(permissions ...Permission) uhttp.Middleware {
 			}
 
 			for _, permission := range permissions {
-
 				if !user.CheckPermission(permission) {
 					packageConfig.UHTTP.RenderError(w, r, fmt.Errorf("Unauthorized: user does not have required permissions (%s)", permission))
 					return

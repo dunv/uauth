@@ -11,9 +11,7 @@ import (
 )
 
 var GetUserHandler = uhttp.NewHandler(
-	uhttp.WithMiddlewares([]uhttp.Middleware{
-		uauth.AuthJWT(),
-	}),
+	uhttp.WithMiddlewares(uauth.AuthJWT()),
 	uhttp.WithRequiredGet(uhttp.R{
 		"userId": uhttp.STRING,
 	}),
