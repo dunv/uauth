@@ -15,3 +15,28 @@ type TokenResponseModel struct {
 	AccessToken  string      `json:"accessToken"`
 	RefreshToken string      `json:"refreshToken"`
 }
+type LoginRequestModel struct {
+	User     *uauth.User `json:"user,omitempty"`
+	UserName *string     `json:"userName,omitempty"`
+	Password *string     `json:"password,omitempty"`
+}
+
+func (l *LoginRequestModel) GetUserName() string {
+	if l.UserName != nil {
+		return *l.UserName
+	}
+	if l.User != nil {
+		return l.User.UserName
+	}
+	return ""
+}
+
+func (l *LoginRequestModel) GetPassword() string {
+	if l.Password != nil {
+		return *l.Password
+	}
+	if l.User != nil {
+		return *l.User.Password
+	}
+	return ""
+}

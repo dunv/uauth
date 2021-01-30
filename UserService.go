@@ -61,6 +61,27 @@ func (s *UserService) getByUserName(userName string) (*User, error) {
 	return user, nil
 }
 
+func (s *UserService) GetUIUserByUserNameAndCheckPassword(userName string, plainTextPassword string) (*User, error) {
+	user, err := s.getByUserName(userName)
+	if err != nil {
+		return nil, err
+	}
+
+	if !user.CheckPassword(plainTextPassword) {
+		return nil, ErrInvalidUser
+	}
+
+	roleDict, err := s.roleService.GetMultipleByName(*user.Roles)
+	if err != nil {
+		return nil, err
+	}
+	uiUser, err := user.CleanForUI(roleDict)
+	if err != nil {
+		return nil, err
+	}
+	return uiUser, nil
+}
+
 // GetUIUserByUserName from mongoDB
 func (s *UserService) GetUIUserByUserName(userName string) (*User, error) {
 	user, err := s.getByUserName(userName)
