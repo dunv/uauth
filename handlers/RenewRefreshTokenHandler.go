@@ -7,13 +7,9 @@ import (
 	"github.com/dunv/uhttp"
 )
 
-type refreshTokenRequest struct {
-	RefreshToken string `json:"refreshToken"`
-}
-
 // Trade in an old refresh-token for a new one
 var RenewRefreshTokenHandler = uhttp.NewHandler(
-	uhttp.WithPostModel(refreshTokenRequest{}, func(r *http.Request, model interface{}, returnCode *int) interface{} {
+	uhttp.WithPostModel(RefreshTokenRequestModel{}, func(r *http.Request, model interface{}, returnCode *int) interface{} {
 		config, err := uauth.ConfigFromRequest(r)
 		if err != nil {
 			return err
@@ -22,7 +18,7 @@ var RenewRefreshTokenHandler = uhttp.NewHandler(
 		userService := uauth.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
 
 		// Parse request
-		req := model.(*refreshTokenRequest)
+		req := model.(*RefreshTokenRequestModel)
 
 		// Check if token is valid (entails checking the DB)
 		refreshTokenModel, err := uauth.ValidateRefreshToken(req.RefreshToken, userService, config, r.Context())
@@ -37,14 +33,32 @@ var RenewRefreshTokenHandler = uhttp.NewHandler(
 			return err
 		}
 
-		// Create a new one and return it
-		newRefreshToken, err := uauth.GenerateRefreshToken(refreshTokenModel.UserName, userService, refreshTokenModel.Device, config, r.Context())
+		// Delete all expired tokens ("request-based-cron")
+		err = userService.DeleteExpiredRefreshTokens(refreshTokenModel.UserName, r.Context())
 		if err != nil {
 			return err
 		}
 
-		return map[string]interface{}{
-			"refreshToken": newRefreshToken,
+		// Create a new one
+		signedRefreshToken, err := uauth.GenerateRefreshToken(refreshTokenModel.UserName, userService, refreshTokenModel.Device, config, r.Context())
+		if err != nil {
+			return err
+		}
+
+		// Generate an accessToken as well (to simplify the client API)
+		uiUser, err := userService.GetUIUserByUserName(refreshTokenModel.UserName)
+		if err != nil {
+			return err
+		}
+		signedAccessToken, err := uauth.GenerateAccessToken(uiUser, config, r.Context())
+		if err != nil {
+			return err
+		}
+
+		return TokenResponseModel{
+			User:         uiUser,
+			AccessToken:  signedAccessToken,
+			RefreshToken: signedRefreshToken,
 		}
 	}),
 )

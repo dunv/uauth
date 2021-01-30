@@ -25,24 +25,13 @@ var LoginHandler = uhttp.NewHandler(
 
 		// Verify user with password
 		userService := uauth.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
-		dbUser, err := userService.GetByUserName(loginRequest.User.UserName)
-		if err != nil || !(*dbUser).CheckPassword(*loginRequest.User.Password) {
+		uiUser, err := userService.GetUIUserByUserName(loginRequest.User.UserName)
+		if err != nil || !(*uiUser).CheckPassword(*loginRequest.User.Password) {
 			if err == nil {
 				err = fmt.Errorf("nil")
 			}
 			*returnCode = http.StatusUnauthorized
 			return uauth.MachineError(uauth.ErrInvalidUser, fmt.Errorf("No user with this name/password exists (%s)", err))
-		}
-
-		// Resolve roles into permissions
-		rolesService := uauth.NewRoleService(uauth.UserDB(r), uauth.UserDBName(r))
-		roleDict, err := rolesService.GetMultipleByName(*dbUser.Roles)
-		if err != nil {
-			return err
-		}
-		uiUser, err := dbUser.CleanForUI(roleDict)
-		if err != nil {
-			return err
 		}
 
 		// Create accessToken
@@ -51,8 +40,8 @@ var LoginHandler = uhttp.NewHandler(
 			return err
 		}
 
-		// Delete all expired tokens
-		err = userService.DeleteExpiredRefreshTokens(dbUser.UserName, r.Context())
+		// Delete all expired tokens ("request-based-cron")
+		err = userService.DeleteExpiredRefreshTokens(uiUser.UserName, r.Context())
 		if err != nil {
 			return err
 		}
@@ -64,10 +53,10 @@ var LoginHandler = uhttp.NewHandler(
 		}
 
 		// Render response
-		return map[string]interface{}{
-			"user":         uiUser,
-			"accessToken":  signedAccessToken,
-			"refreshToken": signedRefreshToken,
+		return TokenResponseModel{
+			User:         uiUser,
+			AccessToken:  signedAccessToken,
+			RefreshToken: signedRefreshToken,
 		}
 	}),
 )

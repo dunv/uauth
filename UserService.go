@@ -15,11 +15,13 @@ import (
 // UserService datastructure
 type UserService struct {
 	umongo.ModelService
+	roleService *RoleService
 }
 
 // NewUserService for creating a UserService
 func NewUserService(db *mongo.Client, dbName string) *UserService {
 	return &UserService{
+		roleService: NewRoleService(db, dbName),
 		ModelService: umongo.NewModelService(db, dbName, "users", []mongo.IndexModel{
 			{
 				Keys: bson.M{"userName": 1},
@@ -50,13 +52,30 @@ func (s *UserService) CreateUser(user *User) error {
 }
 
 // GetByUserName from mongoDB
-func (s *UserService) GetByUserName(userName string) (*User, error) {
+func (s *UserService) getByUserName(userName string) (*User, error) {
 	user := &User{}
 	res := s.Col.FindOne(context.Background(), bson.M{"userName": userName})
 	if err := res.Decode(user); err != nil {
 		return nil, fmt.Errorf("Could not decode (%s)", err)
 	}
 	return user, nil
+}
+
+// GetUIUserByUserName from mongoDB
+func (s *UserService) GetUIUserByUserName(userName string) (*User, error) {
+	user, err := s.getByUserName(userName)
+	if err != nil {
+		return nil, err
+	}
+	roleDict, err := s.roleService.GetMultipleByName(*user.Roles)
+	if err != nil {
+		return nil, err
+	}
+	uiUser, err := user.CleanForUI(roleDict)
+	if err != nil {
+		return nil, err
+	}
+	return uiUser, nil
 }
 
 func (s *UserService) AddRefreshToken(userName string, refreshToken string, ctx context.Context) error {
