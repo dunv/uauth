@@ -52,7 +52,7 @@ func (s *UserService) CreateUser(user *User) error {
 }
 
 // GetByUserName from mongoDB
-func (s *UserService) getByUserName(userName string) (*User, error) {
+func (s *UserService) getRawByUserName(userName string) (*User, error) {
 	user := &User{}
 	res := s.Col.FindOne(context.Background(), bson.M{"userName": userName})
 	if err := res.Decode(user); err != nil {
@@ -62,7 +62,7 @@ func (s *UserService) getByUserName(userName string) (*User, error) {
 }
 
 func (s *UserService) GetUIUserByUserNameAndCheckPassword(userName string, plainTextPassword string) (*User, error) {
-	user, err := s.getByUserName(userName)
+	user, err := s.getRawByUserName(userName)
 	if err != nil {
 		return nil, err
 	}
@@ -82,9 +82,9 @@ func (s *UserService) GetUIUserByUserNameAndCheckPassword(userName string, plain
 	return uiUser, nil
 }
 
-// GetUIUserByUserName from mongoDB
-func (s *UserService) GetUIUserByUserName(userName string) (*User, error) {
-	user, err := s.getByUserName(userName)
+// GetUserByUserName from mongoDB
+func (s *UserService) GetUserByUserName(userName string) (*User, error) {
+	user, err := s.getRawByUserName(userName)
 	if err != nil {
 		return nil, err
 	}
