@@ -8,7 +8,6 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/dunv/uhttp"
-	"github.com/dunv/ulog"
 )
 
 func AuthHybrid(
@@ -24,7 +23,7 @@ func AuthHybrid(
 				if err == nil {
 					ctx := context.WithValue(r.Context(), CtxKeyUser, user)
 					ctx = context.WithValue(ctx, CtxKeyAuthMethod, name)
-					ulog.LogIfError(uhttp.AddLogOutput(w, "authMethod", name))
+					_ = uhttp.AddLogOutput(w, "authMethod", name) // if we are using websockets this returns an error which we want to ignore (no logging responseWriter available)
 					next.ServeHTTP(w, r.WithContext(ctx))
 					return
 				}
@@ -36,7 +35,7 @@ func AuthHybrid(
 				if err == nil {
 					ctx := context.WithValue(r.Context(), CtxKeyUser, user)
 					ctx = context.WithValue(ctx, CtxKeyAuthMethod, fmt.Sprintf("%sGet", name))
-					ulog.LogIfError(uhttp.AddLogOutput(w, "authMethod", fmt.Sprintf("%sGet", name)))
+					_ = uhttp.AddLogOutput(w, "authMethod", fmt.Sprintf("%sGet", name)) // if we are using websockets this returns an error which we want to ignore
 					next.ServeHTTP(w, r.WithContext(ctx))
 					return
 				}
@@ -50,8 +49,8 @@ func AuthHybrid(
 					if requestUser == allowedUser && requestPasswordMd5 == allowedPasswordMd5 {
 						ctx := context.WithValue(r.Context(), CtxKeyUser, allowedUser)
 						ctx = context.WithValue(ctx, CtxKeyAuthMethod, "basic")
-						ulog.LogIfError(uhttp.AddLogOutput(w, "authMethod", "basic"))
-						ulog.LogIfError(uhttp.AddLogOutput(w, "user", allowedUser))
+						_ = uhttp.AddLogOutput(w, "authMethod", "basic") // if we are using websockets this returns an error which we want to ignore
+						_ = uhttp.AddLogOutput(w, "user", allowedUser)   // if we are using websockets this returns an error which we want to ignore
 						next.ServeHTTP(w, r.WithContext(ctx))
 						return
 					}
