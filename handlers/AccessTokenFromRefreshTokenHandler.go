@@ -26,7 +26,7 @@ var AccessTokenFromRefreshTokenHandler = uhttp.NewHandler(
 		}
 
 		// Get user
-		uiUser, err := userService.GetUserByUserName(refreshTokenModel.UserName)
+		uiUser, err := userService.GetUiUserByUserName(refreshTokenModel.UserName)
 		if err != nil {
 			*returnCode = http.StatusUnauthorized
 			return uauth.MachineError(uauth.ErrInvalidUser, err)

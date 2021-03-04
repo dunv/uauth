@@ -46,7 +46,7 @@ var RenewRefreshTokenHandler = uhttp.NewHandler(
 		}
 
 		// Generate an accessToken as well (to simplify the client API)
-		uiUser, err := userService.GetUserByUserName(refreshTokenModel.UserName)
+		uiUser, err := userService.GetUiUserByUserName(refreshTokenModel.UserName)
 		if err != nil {
 			return err
 		}

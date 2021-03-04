@@ -61,6 +61,16 @@ func (s *UserService) getRawByUserName(userName string) (*User, error) {
 	return user, nil
 }
 
+// GetByUserName from mongoDB
+func (s *UserService) getRawByUserID(userID primitive.ObjectID) (*User, error) {
+	user := &User{}
+	res := s.Col.FindOne(context.Background(), bson.M{"_id": userID})
+	if err := res.Decode(user); err != nil {
+		return nil, fmt.Errorf("Could not decode (%s)", err)
+	}
+	return user, nil
+}
+
 func (s *UserService) GetUIUserByUserNameAndCheckPassword(userName string, plainTextPassword string) (*User, error) {
 	user, err := s.getRawByUserName(userName)
 	if err != nil {
@@ -82,8 +92,24 @@ func (s *UserService) GetUIUserByUserNameAndCheckPassword(userName string, plain
 	return uiUser, nil
 }
 
-// GetUserByUserName from mongoDB
-func (s *UserService) GetUserByUserName(userName string) (*User, error) {
+func (s *UserService) GetUiUserByUserID(ID primitive.ObjectID) (*User, error) {
+	user, err := s.getRawByUserID(ID)
+	if err != nil {
+		return nil, err
+	}
+	roleDict, err := s.roleService.GetMultipleByName(*user.Roles)
+	if err != nil {
+		return nil, err
+	}
+	uiUser, err := user.CleanForUI(roleDict)
+	if err != nil {
+		return nil, err
+	}
+	return uiUser, nil
+}
+
+// GetUiUserByUserName from mongoDB
+func (s *UserService) GetUiUserByUserName(userName string) (*User, error) {
 	user, err := s.getRawByUserName(userName)
 	if err != nil {
 		return nil, err
