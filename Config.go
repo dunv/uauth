@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/dunv/uhttp"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Config struct {
@@ -14,6 +15,7 @@ type Config struct {
 	BCryptSecret string
 
 	// Connection to the mongo-database
+	UserDB                 *mongo.Client
 	UserDbConnectionString string
 	UserDbName             string
 

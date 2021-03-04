@@ -6,6 +6,12 @@ const (
 	// Context key which allows access to a mongoClient connected to the user db
 	CtxKeyUserDbClient uhttp.ContextKey = "uauth.ctxKeyUserDbClient"
 
+	// Context key for getting a ready userService
+	CtxKeyUserService uhttp.ContextKey = "uauth.ctxKeyUserService"
+
+	// Context key for getting a ready userService
+	CtxKeyRoleService uhttp.ContextKey = "uauth.ctxKeyRoleService"
+
 	// Context key which allows access to the name of the used userDB
 	CtxKeyUserDbName uhttp.ContextKey = "uauth.ctxKeyUserDbName"
 

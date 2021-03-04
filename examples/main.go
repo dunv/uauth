@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -19,27 +18,25 @@ type additional struct {
 func main() {
 	ulog.SetLogLevel(ulog.LEVEL_TRACE)
 
-	err := uauth.SetConfig(uauth.Config{
+	u := uhttp.NewUHTTP()
+
+	if err := uauth.SetConfig(uauth.Config{
+		UHTTP:                  u,
 		BCryptSecret:           "randomSecret",
 		UserDbConnectionString: "mongodb://localhost:27057",
 		UserDbName:             "uauthExample",
 		TokenIssuer:            "uauthExample.unverricht.net",
 		RefreshTokenValidity:   24 * 7 * time.Hour,
 		AccessTokenValidity:    5 * time.Second,
-	})
-
-	if err != nil {
+	}); err != nil {
 		ulog.Fatalf("Could not setup uauth. Exiting (%v)", err)
-		return
 	}
-
-	u := uhttp.NewUHTTP()
 
 	// Setup Handlers
 	handlers.CreateDefaultHandlers(u)
 
 	u.Handle("/withAuthorization", uhttp.NewHandler(
-		uhttp.WithMiddlewares([]uhttp.Middleware{uauth.AuthJWT()}),
+		uhttp.WithMiddlewares(uauth.AuthJWT()),
 		uhttp.WithGet(func(r *http.Request, ret *int) interface{} {
 			additionalAttrs := additional{}
 			_, err := uauth.UserFromRequest(r, &additionalAttrs)
@@ -55,10 +52,5 @@ func main() {
 			return map[string]string{"auth": "noAuthorization"}
 		}),
 	))
-
-	ip := "0.0.0.0"
-	port := 8080
-	ulog.Infof("Serving at %s:%d", ip, port)
-	ulog.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", ip, port), nil))
-
+	ulog.Fatal(u.ListenAndServe())
 }

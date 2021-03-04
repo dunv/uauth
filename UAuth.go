@@ -29,6 +29,16 @@ func SetConfig(_config Config) error {
 		return fmt.Errorf("Could not connect to db. Exiting (%v)", err)
 	}
 
+	userService := NewUserService(mongoClient, _config.UserDbName)
+	if err := packageConfig.UHTTP.AddContext(CtxKeyUserService, userService); err != nil {
+		return err
+	}
+
+	roleService := NewRoleService(mongoClient, _config.UserDbName)
+	if err := packageConfig.UHTTP.AddContext(CtxKeyRoleService, roleService); err != nil {
+		return err
+	}
+
 	if err := packageConfig.UHTTP.AddContext(CtxKeyUserDbClient, mongoClient); err != nil {
 		return err
 	}
@@ -80,6 +90,14 @@ func UserFromContext(ctx context.Context, additionalAttributes ...interface{}) (
 
 	return &user, nil
 
+}
+
+func GetUserService(r *http.Request) *UserService {
+	return r.Context().Value(CtxKeyUserService).(*UserService)
+}
+
+func GetRoleService(r *http.Request) *RoleService {
+	return r.Context().Value(CtxKeyRoleService).(*RoleService)
 }
 
 func UserFromRequest(r *http.Request, additionalAttributes ...interface{}) (*User, error) {
