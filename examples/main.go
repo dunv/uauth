@@ -27,7 +27,7 @@ func main() {
 		UserDbName:             "uauthExample",
 		TokenIssuer:            "uauthExample.unverricht.net",
 		RefreshTokenValidity:   24 * 7 * time.Hour,
-		AccessTokenValidity:    5 * time.Second,
+		AccessTokenValidity:    24 * time.Hour,
 	}); err != nil {
 		ulog.Fatalf("Could not setup uauth. Exiting (%v)", err)
 	}

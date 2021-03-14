@@ -21,23 +21,15 @@ type createUserModel struct {
 }
 
 var CreateUserHandler = uhttp.NewHandler(
-	uhttp.WithMiddlewares(uauth.AuthJWT()),
+	uhttp.WithMiddlewares(uauth.AuthJWT(), uauth.CheckPermissions(uauth.CanCreateUsers)),
 	uhttp.WithPostModel(
 		createUserModel{},
 		func(r *http.Request, model interface{}, returnCode *int) interface{} {
-			user, err := uauth.UserFromRequest(r)
-			if err != nil {
-				return err
-			}
-			if !user.CheckPermission(uauth.CanCreateUsers) {
-				return fmt.Errorf("User does not have the required permission: %s", uauth.CanCreateUsers)
-			}
-
 			// Parse requestedUserModel
 			userFromRequest := model.(*createUserModel)
 
 			// Verify all roles exist
-			roleService := uauth.NewRoleService(uauth.UserDB(r), uauth.UserDBName(r))
+			roleService := uauth.GetRoleService(r)
 			allRoles, err := roleService.List()
 			if err != nil {
 				return err
@@ -61,7 +53,7 @@ var CreateUserHandler = uhttp.NewHandler(
 				return err
 			}
 
-			userService := uauth.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
+			userService := uauth.GetUserService(r)
 			userToBeCreated := uauth.User{
 				UserName:  userFromRequest.UserName,
 				FirstName: userFromRequest.FirstName,

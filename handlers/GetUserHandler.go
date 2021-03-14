@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -11,25 +10,15 @@ import (
 )
 
 var GetUserHandler = uhttp.NewHandler(
-	uhttp.WithMiddlewares(uauth.AuthJWT()),
-	uhttp.WithRequiredGet(uhttp.R{
-		"userId": uhttp.STRING,
-	}),
+	uhttp.WithMiddlewares(uauth.AuthJWT(), uauth.CheckPermissions(uauth.CanReadUsers)),
+	uhttp.WithRequiredGet(uhttp.R{"userId": uhttp.STRING}),
 	uhttp.WithGet(func(r *http.Request, returnCode *int) interface{} {
-		user, err := uauth.UserFromRequest(r)
-		if err != nil {
-			return err
-		}
-		if !user.CheckPermission(uauth.CanReadUsers) {
-			return fmt.Errorf("User does not have the required permission: %s", uauth.CanReadUsers)
-		}
-
-		service := uauth.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
+		service := uauth.GetUserService(r)
 		ID, err := primitive.ObjectIDFromHex(*uhttp.GetAsString("userId", r))
 		if err != nil {
 			return err
 		}
-		userFromDb, err := service.Get(ID)
+		userFromDb, err := service.GetUiUserByUserID(ID)
 
 		if err != nil {
 			return err

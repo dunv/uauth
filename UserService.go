@@ -32,7 +32,7 @@ func NewUserService(db *mongo.Client, dbName string) *UserService {
 				},
 			},
 			{
-				Keys: bson.M{"userName": 1, "refreshTokens": 1},
+				Keys: bson.D{bson.E{Key: "userName", Value: 1}, bson.E{Key: "refreshTokens", Value: 1}},
 				Options: &options.IndexOptions{
 					Name:       uhelpers.PtrToString("userName_refreshTokens_1"),
 					Background: uhelpers.PtrToBool(true),

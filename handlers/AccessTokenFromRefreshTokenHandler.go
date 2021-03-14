@@ -9,7 +9,7 @@ import (
 
 var AccessTokenFromRefreshTokenHandler = uhttp.NewHandler(
 	uhttp.WithPostModel(RefreshTokenRequestModel{}, func(r *http.Request, model interface{}, returnCode *int) interface{} {
-		userService := uauth.NewUserService(uauth.UserDB(r), uauth.UserDBName(r))
+		userService := uauth.GetUserService(r)
 		config, err := uauth.ConfigFromRequest(r)
 		if err != nil {
 			return err
