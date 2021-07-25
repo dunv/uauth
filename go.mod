@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go v1.37.30 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dunv/uhelpers v1.0.14
-	github.com/dunv/uhttp v1.0.73
+	github.com/dunv/uhttp v1.0.75
 	github.com/dunv/ulog v1.0.23
 	github.com/dunv/umongo v1.0.19
 	github.com/golang/snappy v0.0.3 // indirect
